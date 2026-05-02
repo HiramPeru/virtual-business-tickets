@@ -1,8 +1,18 @@
 import { SetupAdminForm } from "@/components/SetupAdminForm";
 import { isSupabaseConfigured } from "@/app/lib/env";
+import { getSupabaseServerClient } from "@/app/lib/supabase-server";
 
-export default function SetupPage() {
+export const dynamic = "force-dynamic";
+
+export default async function SetupPage() {
   const configured = isSupabaseConfigured();
+  let setupClosed = false;
+
+  if (configured) {
+    const supabase = await getSupabaseServerClient();
+    const { data, error } = await supabase.rpc("has_any_profile");
+    setupClosed = error ? true : Boolean(data);
+  }
 
   return (
     <main
@@ -21,7 +31,7 @@ export default function SetupPage() {
           </div>
         </div>
         {configured ? (
-          <SetupAdminForm />
+          <SetupAdminForm disabled={setupClosed} />
         ) : (
           <div className="panel">
             <div className="panel-body">

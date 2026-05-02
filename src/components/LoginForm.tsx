@@ -41,7 +41,9 @@ export function LoginForm() {
       return;
     }
 
-    window.location.assign(searchParams.get("next") || "/tickets");
+    const nextPath = searchParams.get("next");
+    const safeNextPath = nextPath?.startsWith("/") && !nextPath.startsWith("//") ? nextPath : "/tickets";
+    window.location.assign(safeNextPath);
     router.refresh();
   }
 

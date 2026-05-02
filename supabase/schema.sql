@@ -21,7 +21,7 @@ CREATE TABLE contacts (
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
-  role TEXT NOT NULL DEFAULT 'technician' CHECK (role IN ('admin', 'technician')),
+  role TEXT NOT NULL DEFAULT 'pending' CHECK (role IN ('admin', 'technician', 'pending')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -204,26 +204,51 @@ AS $$
   );
 $$;
 
-CREATE POLICY companies_read_authenticated ON companies
-  FOR SELECT TO authenticated USING (true);
-CREATE POLICY companies_insert_authenticated ON companies
-  FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY companies_update_authenticated ON companies
-  FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+CREATE OR REPLACE FUNCTION public.has_any_profile()
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (SELECT 1 FROM profiles);
+$$;
 
-CREATE POLICY contacts_read_authenticated ON contacts
-  FOR SELECT TO authenticated USING (true);
-CREATE POLICY contacts_insert_authenticated ON contacts
-  FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY contacts_update_authenticated ON contacts
-  FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
+GRANT EXECUTE ON FUNCTION public.has_any_profile() TO anon, authenticated;
 
-CREATE POLICY profiles_read_authenticated ON profiles
-  FOR SELECT TO authenticated USING (true);
-CREATE POLICY profiles_update_self_name ON profiles
+CREATE OR REPLACE FUNCTION public.can_access_app()
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND role IN ('admin', 'technician')
+  );
+$$;
+
+GRANT EXECUTE ON FUNCTION public.can_access_app() TO authenticated;
+
+CREATE POLICY companies_read_active ON companies
+  FOR SELECT TO authenticated USING (public.can_access_app());
+CREATE POLICY companies_insert_active ON companies
+  FOR INSERT TO authenticated WITH CHECK (public.can_access_app());
+CREATE POLICY companies_update_active ON companies
+  FOR UPDATE TO authenticated USING (public.can_access_app()) WITH CHECK (public.can_access_app());
+
+CREATE POLICY contacts_read_active ON contacts
+  FOR SELECT TO authenticated USING (public.can_access_app());
+CREATE POLICY contacts_insert_active ON contacts
+  FOR INSERT TO authenticated WITH CHECK (public.can_access_app());
+CREATE POLICY contacts_update_active ON contacts
+  FOR UPDATE TO authenticated USING (public.can_access_app()) WITH CHECK (public.can_access_app());
+
+CREATE POLICY profiles_read_active_or_self ON profiles
+  FOR SELECT TO authenticated USING (public.can_access_app() OR id = auth.uid());
+CREATE POLICY profiles_update_self_active ON profiles
   FOR UPDATE TO authenticated
-  USING (id = auth.uid())
-  WITH CHECK (id = auth.uid());
+  USING (public.can_access_app() AND id = auth.uid())
+  WITH CHECK (public.can_access_app() AND id = auth.uid());
 CREATE POLICY profiles_admin_all ON profiles
   FOR ALL TO authenticated
   USING (public.is_admin())
@@ -243,20 +268,20 @@ CREATE TRIGGER profiles_prevent_role_change
 BEFORE UPDATE ON profiles
 FOR EACH ROW EXECUTE FUNCTION prevent_self_role_change();
 
-CREATE POLICY tickets_read_authenticated ON tickets
-  FOR SELECT TO authenticated USING (true);
-CREATE POLICY tickets_insert_authenticated ON tickets
-  FOR INSERT TO authenticated WITH CHECK (created_by = auth.uid());
-CREATE POLICY tickets_update_authenticated ON tickets
-  FOR UPDATE TO authenticated USING (true) WITH CHECK (updated_by = auth.uid());
+CREATE POLICY tickets_read_active ON tickets
+  FOR SELECT TO authenticated USING (public.can_access_app());
+CREATE POLICY tickets_insert_active ON tickets
+  FOR INSERT TO authenticated WITH CHECK (public.can_access_app() AND created_by = auth.uid());
+CREATE POLICY tickets_update_active ON tickets
+  FOR UPDATE TO authenticated USING (public.can_access_app()) WITH CHECK (public.can_access_app() AND updated_by = auth.uid());
 
-CREATE POLICY comments_read_authenticated ON ticket_comments
-  FOR SELECT TO authenticated USING (true);
-CREATE POLICY comments_insert_authenticated ON ticket_comments
-  FOR INSERT TO authenticated WITH CHECK (author_id = auth.uid());
+CREATE POLICY comments_read_active ON ticket_comments
+  FOR SELECT TO authenticated USING (public.can_access_app());
+CREATE POLICY comments_insert_active ON ticket_comments
+  FOR INSERT TO authenticated WITH CHECK (public.can_access_app() AND author_id = auth.uid());
 
-CREATE POLICY events_read_authenticated ON ticket_events
-  FOR SELECT TO authenticated USING (true);
+CREATE POLICY events_read_active ON ticket_events
+  FOR SELECT TO authenticated USING (public.can_access_app());
 
 CREATE OR REPLACE FUNCTION create_profile_for_new_user()
 RETURNS TRIGGER AS $$
@@ -265,7 +290,7 @@ BEGIN
   VALUES (
     NEW.id,
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email),
-    CASE WHEN NOT EXISTS (SELECT 1 FROM profiles) THEN 'admin' ELSE 'technician' END
+    CASE WHEN NOT public.has_any_profile() THEN 'admin' ELSE 'pending' END
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN NEW;

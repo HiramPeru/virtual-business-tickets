@@ -42,9 +42,10 @@ docs/
 ## Autenticacion
 
 - `src/proxy.ts` protege `/tickets`, `/customers` y `/profile`.
-- `/login` y `/setup` son publicos.
+- `/login` y `/setup` son publicos, pero `/setup` deshabilita el formulario cuando ya existe un perfil.
 - Si el usuario no tiene sesion, se redirige a `/login`.
 - Si el usuario ya tiene sesion e intenta abrir `/login` o `/setup`, se redirige a `/tickets`.
+- Las cuentas con rol `pending` no acceden al panel operativo aunque tengan sesion valida.
 
 ## Clientes Supabase
 

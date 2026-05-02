@@ -56,6 +56,27 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .maybeSingle();
 
+  if (!profile || !["admin", "technician"].includes(profile.role)) {
+    return (
+      <main className="content" style={{ minHeight: "100vh" }}>
+        <div className="page-title">
+          <div>
+            <h1>Cuenta pendiente</h1>
+            <p>Tu cuenta existe, pero aún no está habilitada para operar en el sistema.</p>
+          </div>
+          <LogoutButton />
+        </div>
+        <div className="panel">
+          <div className="panel-body">
+            <p className="muted" style={{ margin: 0 }}>
+              Solicita a un administrador que active tu perfil como técnico.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <div className="app-shell">
       <aside className="sidebar">

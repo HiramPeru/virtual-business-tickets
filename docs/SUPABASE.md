@@ -20,12 +20,13 @@ No versionar `.env.local`.
 - `supabase/schema.sql`: snapshot legible del esquema completo.
 - `supabase/migrations/202605012353_initial_schema.sql`: migracion inicial.
 - `supabase/migrations/202605020340_first_user_admin.sql`: actualiza el trigger para que el primer perfil sea admin.
+- `supabase/migrations/202605020500_harden_auth_policies.sql`: cierra acceso operativo para cuentas pendientes y endurece RLS.
 
 ## Tablas
 
 - `companies`: empresas clientes.
 - `contacts`: contactos asociados a empresas.
-- `profiles`: usuarios internos, roles `admin` o `technician`.
+- `profiles`: usuarios internos, roles `admin`, `technician` o `pending`.
 - `ticket_daily_counters`: secuencia diaria para codigos.
 - `tickets`: tickets principales.
 - `ticket_comments`: comentarios del ticket.
@@ -46,7 +47,8 @@ La tabla `ticket_daily_counters` evita colisiones por concurrencia.
 El trigger `create_profile_for_new_user()` crea un perfil al registrarse un usuario:
 
 - Si no existe ningun perfil, el rol queda como `admin`.
-- Si ya existe al menos un perfil, el rol queda como `technician`.
+- Si ya existe al menos un perfil, el rol queda como `pending`.
+- `/setup` consulta `has_any_profile()` y queda cerrado cuando ya existe un perfil.
 
 ## RLS
 
@@ -59,7 +61,7 @@ RLS esta activo en:
 - `ticket_comments`
 - `ticket_events`
 
-La v1 asume usuarios internos autenticados. Por eso los tecnicos pueden leer datos operativos. Las escrituras validan usuario en campos como `created_by`, `updated_by` y `author_id`.
+La v1 permite operar solo a perfiles con rol `admin` o `technician`. Las cuentas `pending` pueden existir en Auth, pero RLS les bloquea clientes, tickets, comentarios e historial. Las escrituras validan usuario en campos como `created_by`, `updated_by` y `author_id`.
 
 ## Aplicar Migraciones
 

@@ -12,11 +12,13 @@ Debe terminar sin errores TypeScript.
 
 - Abrir `/setup`.
 - Crear primer admin.
+- Confirmar que `/setup` queda cerrado despues de existir el primer perfil.
 - Confirmar correo si Supabase lo solicita.
 - Entrar por `/login`.
 - Confirmar redireccion a `/tickets`.
 - Cerrar sesion.
 - Confirmar que `/tickets` redirige a `/login`.
+- Probar que `/login?next=https://example.com` redirige a `/tickets`, no al dominio externo.
 
 ## Clientes
 

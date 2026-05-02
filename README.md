@@ -54,7 +54,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
 4. Ingresa por `/login`.
 5. Crea clientes y tickets.
 
-Si ya existe al menos un perfil, los usuarios nuevos creados por Supabase quedan como `technician`.
+Si ya existe al menos un perfil, `/setup` queda cerrado y los usuarios nuevos creados por Supabase quedan como `pending` hasta que un admin los habilite.
 
 ## Comandos Utiles
 

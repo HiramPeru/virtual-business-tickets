@@ -13,8 +13,15 @@
 1. Entrar a `/setup`.
 2. Registrar nombre, email y contrasena.
 3. Si no existe ningun perfil en `profiles`, Supabase crea el perfil con `role = 'admin'`.
-4. Si Supabase exige confirmacion de correo, confirmar el email antes de entrar.
-5. Ingresar por `/login`.
+4. Si ya existe un perfil, `/setup` queda cerrado.
+5. Si Supabase exige confirmacion de correo, confirmar el email antes de entrar.
+6. Ingresar por `/login`.
+
+## Alta de Usuarios
+
+- Los usuarios creados despues del primer admin quedan con `role = 'pending'`.
+- Un perfil `pending` no puede leer ni modificar datos operativos.
+- Un admin debe cambiar el rol a `technician` para habilitar la cuenta.
 
 ## Uso Diario
 

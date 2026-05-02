@@ -3,13 +3,14 @@
 import { FormEvent, useState } from "react";
 import { getSupabaseBrowserClient } from "@/app/lib/supabase-browser";
 
-export function SetupAdminForm() {
+export function SetupAdminForm({ disabled = false }: { disabled?: boolean }) {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (disabled) return;
     setError("");
     setMessage("");
     setLoading(true);
@@ -48,6 +49,7 @@ export function SetupAdminForm() {
   return (
     <form className="panel" onSubmit={onSubmit}>
       <div className="panel-body" style={{ display: "grid", gap: 14 }}>
+        {disabled ? <div className="alert">El setup inicial ya fue cerrado. Ingresa con una cuenta autorizada.</div> : null}
         {error ? <div className="alert">{error}</div> : null}
         {message ? <div className="badge success">{message}</div> : null}
         <div className="field">
@@ -62,7 +64,7 @@ export function SetupAdminForm() {
           <label htmlFor="password">Contraseña</label>
           <input className="input" id="password" minLength={8} name="password" required type="password" />
         </div>
-        <button className="button" disabled={loading} type="submit">
+        <button className="button" disabled={disabled || loading} type="submit">
           {loading ? "Creando..." : "Crear primer admin"}
         </button>
       </div>
