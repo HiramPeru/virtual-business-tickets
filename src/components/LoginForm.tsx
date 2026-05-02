@@ -18,7 +18,8 @@ export function LoginForm() {
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") || "");
     const password = String(formData.get("password") || "");
-    const { error: loginError } = await getSupabaseBrowserClient().auth.signInWithPassword({
+    const supabase = getSupabaseBrowserClient();
+    const { error: loginError } = await supabase.auth.signInWithPassword({
       email,
       password
     });
@@ -30,7 +31,16 @@ export function LoginForm() {
       return;
     }
 
-    router.push(searchParams.get("next") || "/tickets");
+    const {
+      data: { session }
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      setError("El login fue aceptado, pero no se pudo crear la sesión en el navegador.");
+      return;
+    }
+
+    window.location.assign(searchParams.get("next") || "/tickets");
     router.refresh();
   }
 
