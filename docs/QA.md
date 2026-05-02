@@ -22,7 +22,9 @@ Debe terminar sin errores TypeScript.
 
 ## Clientes
 
+- Crear cliente principal `WOW Perú` o confirmar que existe.
 - Crear cliente desde `/customers/new`.
+- Asociar empresa a un cliente principal.
 - Verificar que aparece en `/customers`.
 - Crear cliente desde `/tickets/new` usando `Nuevo cliente`.
 - Buscar cliente por email.
@@ -52,6 +54,13 @@ Debe terminar sin errores TypeScript.
 - Cambiar nombre completo.
 - Verificar que el nombre aparece en la cabecera y comentarios nuevos.
 - Confirmar que no existe control UI para cambiar rol.
+
+## Usuarios
+
+- Crear un usuario `operator`.
+- Crear un usuario `client_readonly` asociado a WOW Perú.
+- Confirmar que `client_readonly` ve tickets de WOW Perú sin botones de crear, editar ni comentar.
+- Confirmar que `client_readonly` no ve `Clientes`, `Clientes principales` ni `Usuarios`.
 
 ## Produccion
 

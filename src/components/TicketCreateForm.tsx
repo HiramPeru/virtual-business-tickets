@@ -9,10 +9,12 @@ type Contact = {
   id: string;
   email: string;
   full_name: string | null;
-  company?: { name: string | null } | null;
+  company?: { name: string | null; principal_client?: { name: string | null } | null } | null;
 };
 
-export function TicketCreateForm() {
+type PrincipalClient = { id: string; name: string };
+
+export function TicketCreateForm({ principalClients }: { principalClients: PrincipalClient[] }) {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [contacts, setContacts] = useState<Contact[]>([]);
@@ -48,7 +50,8 @@ export function TicketCreateForm() {
       body: JSON.stringify({
         email: formData.get("customer_email"),
         full_name: formData.get("customer_name"),
-        company: formData.get("company")
+        company: formData.get("company"),
+        principal_client_id: formData.get("principal_client_id")
       })
     });
     const data = await response.json();
@@ -162,6 +165,17 @@ export function TicketCreateForm() {
             <div className="field span-2">
               <label>Empresa</label>
               <input className="input" name="company" />
+            </div>
+            <div className="field span-2">
+              <label>Cliente principal</label>
+              <select className="select" name="principal_client_id" required>
+                <option value="">Seleccionar</option>
+                {principalClients.map((client) => (
+                  <option key={client.id} value={client.id}>
+                    {client.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </>
         ) : null}

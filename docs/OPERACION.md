@@ -19,9 +19,17 @@
 
 ## Alta de Usuarios
 
-- Los usuarios creados despues del primer admin quedan con `role = 'pending'`.
+- Los usuarios creados despues del primer admin quedan con `role = 'pending'` si no los habilita un admin.
 - Un perfil `pending` no puede leer ni modificar datos operativos.
-- Un admin debe cambiar el rol a `technician` para habilitar la cuenta.
+- Un admin puede crear usuarios desde `Usuarios`.
+- El rol `operator` opera tickets y clientes internos.
+- El rol `client_readonly` se vincula a un cliente principal y solo ve su historico.
+
+## Clientes Principales
+
+- `Clientes principales` agrupa empresas atendidas por Virtual Business.
+- WOW Perú queda creado como cliente principal inicial.
+- Cada empresa cliente debe asociarse a un cliente principal.
 
 ## Uso Diario
 

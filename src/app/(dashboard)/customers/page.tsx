@@ -7,14 +7,14 @@ type ContactRow = {
   email: string;
   full_name: string | null;
   phone: string | null;
-  company: { name: string | null; ruc: string | null } | null;
+  company: { name: string | null; ruc: string | null; principal_client: { name: string | null } | null } | null;
 };
 
 export default async function CustomersPage() {
   const supabase = await getSupabaseServerClient();
   const { data, error } = await supabase
     .from("contacts")
-    .select("id, email, full_name, phone, created_at, company:companies(name, ruc)")
+    .select("id, email, full_name, phone, created_at, company:companies(name, ruc, principal_client:principal_clients(name))")
     .order("created_at", { ascending: false })
     .limit(100);
   const contacts = (data || []) as unknown as ContactRow[];
@@ -39,6 +39,7 @@ export default async function CustomersPage() {
               <th>Email</th>
               <th>Nombre</th>
               <th>Empresa</th>
+              <th>Cliente principal</th>
               <th>Teléfono</th>
             </tr>
           </thead>
@@ -51,6 +52,7 @@ export default async function CustomersPage() {
                   {contact.company?.name || "-"}
                   <div className="muted">{contact.company?.ruc || ""}</div>
                 </td>
+                <td>{contact.company?.principal_client?.name || "-"}</td>
                 <td>{contact.phone || "-"}</td>
               </tr>
             ))}

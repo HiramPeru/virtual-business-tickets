@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/app/lib/supabase-server";
+import { isInternalRole } from "@/app/lib/options";
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +38,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (!isInternalRole(profile?.role)) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+  }
+
   const body = await request.json();
   const email = String(body.email || "").trim().toLowerCase();
+  const principalClientId = body.principal_client_id || null;
 
   if (!email) {
     return NextResponse.json({ error: "El email es obligatorio" }, { status: 400 });
@@ -50,7 +57,7 @@ export async function POST(request: NextRequest) {
   if (!companyId && companyName) {
     const { data: company, error: companyError } = await supabase
       .from("companies")
-      .upsert({ name: companyName, ruc: body.ruc || null }, { onConflict: "name" })
+      .upsert({ name: companyName, ruc: body.ruc || null, principal_client_id: principalClientId }, { onConflict: "name" })
       .select("id")
       .single();
 

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { getSupabaseServerClient } from "@/app/lib/supabase-server";
 import {
+  isInternalRole,
   priorityClass,
   statusClass,
   ticketCategories,
@@ -23,7 +24,7 @@ type TicketRow = {
   contact: {
     email: string;
     full_name: string | null;
-    company: { name: string | null } | null;
+    company: { name: string | null; principal_client: { name: string | null } | null } | null;
   } | null;
 };
 
@@ -35,9 +36,16 @@ function value(params: Record<string, string | string[] | undefined>, key: strin
 export default async function TicketsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams;
   const supabase = await getSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user?.id).maybeSingle();
+  const canOperate = isInternalRole(profile?.role);
   let query = supabase
     .from("tickets")
-    .select("id, ticket_code, subject, priority, status, category, platform, created_at, contact:contacts(email, full_name, company:companies(name))")
+    .select(
+      "id, ticket_code, subject, priority, status, category, platform, created_at, contact:contacts(email, full_name, company:companies(name, principal_client:principal_clients(name)))"
+    )
     .order("created_at", { ascending: false });
 
   for (const key of ["status", "priority", "category", "platform"]) {
@@ -55,10 +63,12 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
           <h1>Tickets</h1>
           <p>Solicitudes manuales de activación, soporte y consultas.</p>
         </div>
-        <Link className="button" href="/tickets/new">
-          <Plus size={16} />
-          Nuevo ticket
-        </Link>
+        {canOperate ? (
+          <Link className="button" href="/tickets/new">
+            <Plus size={16} />
+            Nuevo ticket
+          </Link>
+        ) : null}
       </div>
       <form className="toolbar">
         <div className="field">
@@ -126,6 +136,7 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
                 <td>
                   <strong>{ticket.contact?.full_name || ticket.contact?.email}</strong>
                   <div className="muted">{ticket.contact?.company?.name || ticket.contact?.email}</div>
+                  <div className="muted">{ticket.contact?.company?.principal_client?.name || ""}</div>
                 </td>
                 <td>
                   <Link href={`/tickets/${ticket.id}`}>{ticket.subject}</Link>

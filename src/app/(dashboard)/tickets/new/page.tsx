@@ -1,6 +1,14 @@
 import { TicketCreateForm } from "@/components/TicketCreateForm";
+import { getSupabaseServerClient } from "@/app/lib/supabase-server";
 
-export default function NewTicketPage() {
+export default async function NewTicketPage() {
+  const supabase = await getSupabaseServerClient();
+  const { data: principalClients } = await supabase
+    .from("principal_clients")
+    .select("id, name")
+    .eq("status", "active")
+    .order("name");
+
   return (
     <>
       <div className="page-title">
@@ -9,7 +17,7 @@ export default function NewTicketPage() {
           <p>Registra una solicitud manual recibida por correo, llamada o WhatsApp.</p>
         </div>
       </div>
-      <TicketCreateForm />
+      <TicketCreateForm principalClients={principalClients || []} />
     </>
   );
 }

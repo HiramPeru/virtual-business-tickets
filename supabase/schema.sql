@@ -1,9 +1,19 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
+CREATE TABLE principal_clients (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT UNIQUE NOT NULL,
+  ruc TEXT,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE companies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT UNIQUE NOT NULL,
   ruc TEXT,
+  principal_client_id UUID REFERENCES principal_clients(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -21,7 +31,8 @@ CREATE TABLE contacts (
 CREATE TABLE profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
-  role TEXT NOT NULL DEFAULT 'pending' CHECK (role IN ('admin', 'technician', 'pending')),
+  role TEXT NOT NULL DEFAULT 'pending' CHECK (role IN ('admin', 'operator', 'technician', 'client_readonly', 'pending')),
+  principal_client_id UUID REFERENCES principal_clients(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -83,6 +94,10 @@ $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER companies_set_updated_at
 BEFORE UPDATE ON companies
+FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+CREATE TRIGGER principal_clients_set_updated_at
+BEFORE UPDATE ON principal_clients
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 CREATE TRIGGER contacts_set_updated_at
@@ -177,6 +192,8 @@ FOR EACH ROW EXECUTE FUNCTION track_ticket_changes();
 CREATE INDEX idx_contacts_email ON contacts(email);
 CREATE INDEX idx_contacts_full_name ON contacts(full_name);
 CREATE INDEX idx_contacts_company_id ON contacts(company_id);
+CREATE INDEX idx_companies_principal_client_id ON companies(principal_client_id);
+CREATE INDEX idx_profiles_principal_client_id ON profiles(principal_client_id);
 CREATE INDEX idx_tickets_created_at_desc ON tickets(created_at DESC);
 CREATE INDEX idx_tickets_status_created_at ON tickets(status, created_at DESC);
 CREATE INDEX idx_tickets_priority_created_at ON tickets(priority, created_at DESC);
@@ -185,6 +202,7 @@ CREATE INDEX idx_tickets_contact_id ON tickets(contact_id);
 CREATE INDEX idx_ticket_comments_ticket_id ON ticket_comments(ticket_id);
 CREATE INDEX idx_ticket_events_ticket_id ON ticket_events(ticket_id);
 
+ALTER TABLE principal_clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contacts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
@@ -223,32 +241,90 @@ SET search_path = public
 AS $$
   SELECT EXISTS (
     SELECT 1 FROM profiles
-    WHERE id = auth.uid() AND role IN ('admin', 'technician')
+    WHERE id = auth.uid() AND role IN ('admin', 'operator', 'technician', 'client_readonly')
   );
 $$;
 
 GRANT EXECUTE ON FUNCTION public.can_access_app() TO authenticated;
 
-CREATE POLICY companies_read_active ON companies
-  FOR SELECT TO authenticated USING (public.can_access_app());
-CREATE POLICY companies_insert_active ON companies
-  FOR INSERT TO authenticated WITH CHECK (public.can_access_app());
-CREATE POLICY companies_update_active ON companies
-  FOR UPDATE TO authenticated USING (public.can_access_app()) WITH CHECK (public.can_access_app());
+CREATE OR REPLACE FUNCTION public.is_internal_user()
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM profiles
+    WHERE id = auth.uid() AND role IN ('admin', 'operator', 'technician')
+  );
+$$;
 
-CREATE POLICY contacts_read_active ON contacts
-  FOR SELECT TO authenticated USING (public.can_access_app());
-CREATE POLICY contacts_insert_active ON contacts
-  FOR INSERT TO authenticated WITH CHECK (public.can_access_app());
-CREATE POLICY contacts_update_active ON contacts
-  FOR UPDATE TO authenticated USING (public.can_access_app()) WITH CHECK (public.can_access_app());
+GRANT EXECUTE ON FUNCTION public.is_internal_user() TO authenticated;
 
-CREATE POLICY profiles_read_active_or_self ON profiles
-  FOR SELECT TO authenticated USING (public.can_access_app() OR id = auth.uid());
-CREATE POLICY profiles_update_self_active ON profiles
+CREATE OR REPLACE FUNCTION public.current_principal_client_id()
+RETURNS UUID
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT principal_client_id FROM profiles WHERE id = auth.uid();
+$$;
+
+GRANT EXECUTE ON FUNCTION public.current_principal_client_id() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.can_read_ticket(ticket_uuid UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT public.is_internal_user()
+    OR EXISTS (
+      SELECT 1
+      FROM tickets t
+      JOIN contacts c ON c.id = t.contact_id
+      JOIN companies co ON co.id = c.company_id
+      JOIN profiles p ON p.id = auth.uid()
+      WHERE t.id = ticket_uuid
+        AND p.role = 'client_readonly'
+        AND p.principal_client_id IS NOT NULL
+        AND co.principal_client_id = p.principal_client_id
+    );
+$$;
+
+GRANT EXECUTE ON FUNCTION public.can_read_ticket(UUID) TO authenticated;
+
+CREATE POLICY principal_clients_read_active ON principal_clients
+  FOR SELECT TO authenticated USING (public.is_internal_user() OR id = public.current_principal_client_id());
+CREATE POLICY principal_clients_insert_internal ON principal_clients
+  FOR INSERT TO authenticated WITH CHECK (public.is_internal_user());
+CREATE POLICY principal_clients_update_internal ON principal_clients
+  FOR UPDATE TO authenticated USING (public.is_internal_user()) WITH CHECK (public.is_internal_user());
+
+CREATE POLICY companies_read_scoped ON companies
+  FOR SELECT TO authenticated USING (public.is_internal_user() OR principal_client_id = public.current_principal_client_id());
+CREATE POLICY companies_insert_internal ON companies
+  FOR INSERT TO authenticated WITH CHECK (public.is_internal_user());
+CREATE POLICY companies_update_internal ON companies
+  FOR UPDATE TO authenticated USING (public.is_internal_user()) WITH CHECK (public.is_internal_user());
+
+CREATE POLICY contacts_read_scoped ON contacts
+  FOR SELECT TO authenticated
+  USING (
+    public.is_internal_user()
+    OR company_id IN (SELECT id FROM companies WHERE principal_client_id = public.current_principal_client_id())
+  );
+CREATE POLICY contacts_insert_internal ON contacts
+  FOR INSERT TO authenticated WITH CHECK (public.is_internal_user());
+CREATE POLICY contacts_update_internal ON contacts
+  FOR UPDATE TO authenticated USING (public.is_internal_user()) WITH CHECK (public.is_internal_user());
+
+CREATE POLICY profiles_read_scoped ON profiles
+  FOR SELECT TO authenticated USING (public.is_internal_user() OR id = auth.uid());
+CREATE POLICY profiles_update_self_internal ON profiles
   FOR UPDATE TO authenticated
-  USING (public.can_access_app() AND id = auth.uid())
-  WITH CHECK (public.can_access_app() AND id = auth.uid());
+  USING (public.is_internal_user() AND id = auth.uid())
+  WITH CHECK (public.is_internal_user() AND id = auth.uid());
 CREATE POLICY profiles_admin_all ON profiles
   FOR ALL TO authenticated
   USING (public.is_admin())
@@ -268,20 +344,20 @@ CREATE TRIGGER profiles_prevent_role_change
 BEFORE UPDATE ON profiles
 FOR EACH ROW EXECUTE FUNCTION prevent_self_role_change();
 
-CREATE POLICY tickets_read_active ON tickets
-  FOR SELECT TO authenticated USING (public.can_access_app());
-CREATE POLICY tickets_insert_active ON tickets
-  FOR INSERT TO authenticated WITH CHECK (public.can_access_app() AND created_by = auth.uid());
-CREATE POLICY tickets_update_active ON tickets
-  FOR UPDATE TO authenticated USING (public.can_access_app()) WITH CHECK (public.can_access_app() AND updated_by = auth.uid());
+CREATE POLICY tickets_read_scoped ON tickets
+  FOR SELECT TO authenticated USING (public.can_read_ticket(id));
+CREATE POLICY tickets_insert_internal ON tickets
+  FOR INSERT TO authenticated WITH CHECK (public.is_internal_user() AND created_by = auth.uid());
+CREATE POLICY tickets_update_internal ON tickets
+  FOR UPDATE TO authenticated USING (public.is_internal_user()) WITH CHECK (public.is_internal_user() AND updated_by = auth.uid());
 
-CREATE POLICY comments_read_active ON ticket_comments
-  FOR SELECT TO authenticated USING (public.can_access_app());
-CREATE POLICY comments_insert_active ON ticket_comments
-  FOR INSERT TO authenticated WITH CHECK (public.can_access_app() AND author_id = auth.uid());
+CREATE POLICY comments_read_scoped ON ticket_comments
+  FOR SELECT TO authenticated USING (public.is_internal_user() OR (visibility = 'customer_visible' AND public.can_read_ticket(ticket_id)));
+CREATE POLICY comments_insert_internal ON ticket_comments
+  FOR INSERT TO authenticated WITH CHECK (public.is_internal_user() AND author_id = auth.uid());
 
-CREATE POLICY events_read_active ON ticket_events
-  FOR SELECT TO authenticated USING (public.can_access_app());
+CREATE POLICY events_read_scoped ON ticket_events
+  FOR SELECT TO authenticated USING (public.can_read_ticket(ticket_id));
 
 CREATE OR REPLACE FUNCTION create_profile_for_new_user()
 RETURNS TRIGGER AS $$

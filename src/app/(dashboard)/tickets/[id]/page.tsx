@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { CommentForm } from "@/components/CommentForm";
 import { TicketActions } from "@/components/TicketActions";
 import { getSupabaseServerClient } from "@/app/lib/supabase-server";
-import { priorityClass, statusClass } from "@/app/lib/options";
+import { isInternalRole, priorityClass, statusClass } from "@/app/lib/options";
 
 type TicketDetail = {
   id: string;
@@ -19,7 +19,7 @@ type TicketDetail = {
     email: string;
     full_name: string | null;
     phone: string | null;
-    company: { name: string | null; ruc: string | null } | null;
+    company: { name: string | null; ruc: string | null; principal_client: { name: string | null } | null } | null;
   } | null;
   assignee: { id: string; full_name: string | null } | null;
 };
@@ -29,10 +29,15 @@ type ProfileRow = { id: string; full_name: string | null };
 export default async function TicketDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const supabase = await getSupabaseServerClient();
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+  const { data: currentProfile } = await supabase.from("profiles").select("role").eq("id", user?.id).maybeSingle();
+  const canOperate = isInternalRole(currentProfile?.role);
   const { data } = await supabase
     .from("tickets")
     .select(
-      "*, contact:contacts(email, full_name, phone, company:companies(name, ruc)), assignee:profiles!tickets_assigned_to_fkey(id, full_name)"
+      "*, contact:contacts(email, full_name, phone, company:companies(name, ruc, principal_client:principal_clients(name))), assignee:profiles!tickets_assigned_to_fkey(id, full_name)"
     )
     .eq("id", id)
     .single();
@@ -69,6 +74,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
                   <strong>Cliente</strong>
                   <p className="muted">
                     {ticket.contact?.full_name || ticket.contact?.email}
+                    <br />
+                    {ticket.contact?.company?.principal_client?.name || "Sin cliente principal"}
                     <br />
                     {ticket.contact?.company?.name || "Sin empresa"}
                     <br />
@@ -109,7 +116,7 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
               {comments?.length === 0 ? <p className="muted">Aún no hay comentarios.</p> : null}
             </div>
           </div>
-          <CommentForm ticketId={id} />
+          {canOperate ? <CommentForm ticketId={id} /> : null}
           <div className="panel">
             <div className="panel-body">
               <h2 style={{ marginTop: 0 }}>Historial</h2>
@@ -126,7 +133,18 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
             </div>
           </div>
         </section>
-        <TicketActions profiles={profiles} ticket={ticket} />
+        {canOperate ? (
+          <TicketActions profiles={profiles} ticket={ticket} />
+        ) : (
+          <div className="panel">
+            <div className="panel-body">
+              <h2 style={{ marginTop: 0 }}>Solo lectura</h2>
+              <p className="muted" style={{ margin: 0 }}>
+                Puedes consultar el histórico visible de este ticket, sin modificarlo.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -6,12 +6,20 @@ async function createCustomer(formData: FormData) {
   const supabase = await getSupabaseServerClient();
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const companyName = String(formData.get("company") || "").trim();
+  const principalClientId = String(formData.get("principal_client_id") || "") || null;
   let companyId = null;
 
   if (companyName) {
     const { data: company } = await supabase
       .from("companies")
-      .upsert({ name: companyName, ruc: String(formData.get("ruc") || "") || null }, { onConflict: "name" })
+      .upsert(
+        {
+          name: companyName,
+          ruc: String(formData.get("ruc") || "") || null,
+          principal_client_id: principalClientId
+        },
+        { onConflict: "name" }
+      )
       .select("id")
       .single();
     companyId = company?.id || null;
@@ -30,7 +38,14 @@ async function createCustomer(formData: FormData) {
   redirect("/customers");
 }
 
-export default function NewCustomerPage() {
+export default async function NewCustomerPage() {
+  const supabase = await getSupabaseServerClient();
+  const { data: principalClients } = await supabase
+    .from("principal_clients")
+    .select("id, name")
+    .eq("status", "active")
+    .order("name");
+
   return (
     <>
       <div className="page-title">
@@ -52,6 +67,17 @@ export default function NewCustomerPage() {
           <div className="field">
             <label>Empresa</label>
             <input className="input" name="company" />
+          </div>
+          <div className="field">
+            <label>Cliente principal</label>
+            <select className="select" name="principal_client_id" required>
+              <option value="">Seleccionar</option>
+              {(principalClients || []).map((client) => (
+                <option key={client.id} value={client.id}>
+                  {client.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="field">
             <label>RUC</label>

@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Building2, ClipboardList, UserRound } from "lucide-react";
+import Image from "next/image";
+import { Building2, ClipboardList, Landmark, UserRound, UsersRound } from "lucide-react";
 import { LogoutButton } from "@/components/LogoutButton";
 import { getSupabaseServerClient } from "@/app/lib/supabase-server";
 import { isSupabaseConfigured } from "@/app/lib/env";
+import { isInternalRole, roleLabel } from "@/app/lib/options";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +58,7 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .maybeSingle();
 
-  if (!profile || !["admin", "technician"].includes(profile.role)) {
+  if (!profile || !["admin", "operator", "technician", "client_readonly"].includes(profile.role)) {
     return (
       <main className="content" style={{ minHeight: "100vh" }}>
         <div className="page-title">
@@ -80,16 +82,33 @@ export default async function DashboardLayout({
   return (
     <div className="app-shell">
       <aside className="sidebar">
-        <div className="brand">Virtual Business Tickets</div>
+        <div className="brand">
+          <Image alt="Virtual Business" height={42} src="/virtual-business-logo.jpg" width={42} />
+          <span>Virtual Business Tickets</span>
+        </div>
         <nav>
           <Link className="nav-link" href="/tickets">
             <ClipboardList size={18} />
             Tickets
           </Link>
-          <Link className="nav-link" href="/customers">
-            <Building2 size={18} />
-            Clientes
-          </Link>
+          {isInternalRole(profile.role) ? (
+            <>
+              <Link className="nav-link" href="/principal-clients">
+                <Landmark size={18} />
+                Clientes principales
+              </Link>
+              <Link className="nav-link" href="/customers">
+                <Building2 size={18} />
+                Clientes
+              </Link>
+            </>
+          ) : null}
+          {profile.role === "admin" ? (
+            <Link className="nav-link" href="/users">
+              <UsersRound size={18} />
+              Usuarios
+            </Link>
+          ) : null}
           <Link className="nav-link" href="/profile">
             <UserRound size={18} />
             Perfil
@@ -101,7 +120,7 @@ export default async function DashboardLayout({
           <div>
             <strong>{profile?.full_name || user.email}</strong>
             <div className="muted" style={{ fontSize: 13 }}>
-              {profile?.role || "technician"}
+              {roleLabel(profile?.role || "pending")}
             </div>
           </div>
           <LogoutButton />

@@ -21,12 +21,14 @@ No versionar `.env.local`.
 - `supabase/migrations/202605012353_initial_schema.sql`: migracion inicial.
 - `supabase/migrations/202605020340_first_user_admin.sql`: actualiza el trigger para que el primer perfil sea admin.
 - `supabase/migrations/202605020500_harden_auth_policies.sql`: cierra acceso operativo para cuentas pendientes y endurece RLS.
+- `supabase/migrations/202605020620_principal_clients_and_users.sql`: agrega clientes principales, roles de operador y acceso cliente solo lectura.
 
 ## Tablas
 
 - `companies`: empresas clientes.
+- `principal_clients`: clientes principales como WOW Perú que agrupan empresas.
 - `contacts`: contactos asociados a empresas.
-- `profiles`: usuarios internos, roles `admin`, `technician` o `pending`.
+- `profiles`: usuarios internos y externos, roles `admin`, `operator`, `client_readonly` o `pending`.
 - `ticket_daily_counters`: secuencia diaria para codigos.
 - `tickets`: tickets principales.
 - `ticket_comments`: comentarios del ticket.
@@ -61,7 +63,9 @@ RLS esta activo en:
 - `ticket_comments`
 - `ticket_events`
 
-La v1 permite operar solo a perfiles con rol `admin` o `technician`. Las cuentas `pending` pueden existir en Auth, pero RLS les bloquea clientes, tickets, comentarios e historial. Las escrituras validan usuario en campos como `created_by`, `updated_by` y `author_id`.
+La v1 permite operar tickets y clientes solo a perfiles `admin` u `operator`. Los usuarios `client_readonly` solo pueden leer tickets, historial y comentarios visibles de su cliente principal. Las cuentas `pending` pueden existir en Auth, pero RLS les bloquea clientes, tickets, comentarios e historial.
+
+Para crear usuarios desde la app, Vercel debe tener `SUPABASE_SERVICE_ROLE_KEY` como variable de entorno de produccion. No debe exponerse en cliente ni versionarse.
 
 ## Aplicar Migraciones
 

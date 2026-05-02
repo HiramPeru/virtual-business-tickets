@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/app/lib/supabase-server";
+import { isInternalRole } from "@/app/lib/options";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,11 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
   if (!user) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (!isInternalRole(profile?.role)) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
   const body = await request.json();

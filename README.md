@@ -16,6 +16,8 @@ Sistema interno de tickets para Virtual Business, construido con Next.js App Rou
 - Ruta `/setup` para crear el primer admin.
 - Rutas protegidas para tickets, clientes y perfil.
 - Clientes separados en empresas y contactos.
+- Clientes principales para agrupar empresas atendidas, con WOW Perú como caso inicial.
+- Usuarios `operator` para operación interna y `client_readonly` para coordinadores/clientes que solo consultan histórico.
 - Creacion manual de tickets para Activacion Cloud, Soporte y Consulta.
 - Filtros por estado, prioridad, categoria y plataforma.
 - Detalle de ticket con comentarios, asignacion, prioridad, estado e historial.

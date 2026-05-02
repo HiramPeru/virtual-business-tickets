@@ -46,6 +46,7 @@ docs/
 - Si el usuario no tiene sesion, se redirige a `/login`.
 - Si el usuario ya tiene sesion e intenta abrir `/login` o `/setup`, se redirige a `/tickets`.
 - Las cuentas con rol `pending` no acceden al panel operativo aunque tengan sesion valida.
+- Las cuentas `client_readonly` acceden al panel, pero RLS limita lectura al cliente principal asociado y la UI oculta acciones de escritura.
 
 ## Clientes Supabase
 
@@ -62,6 +63,9 @@ docs/
 - `GET /api/customers?search=`: busca contactos.
 - `POST /api/customers`: crea contacto y empresa si aplica.
 - `PATCH /api/profile`: actualiza nombre del tecnico.
+- `POST /api/principal-clients`: crea clientes principales.
+- `POST /api/users`: crea usuarios desde Supabase Admin Auth.
+- `PATCH /api/users/[id]`: actualiza rol y cliente principal visible.
 
 ## Paginas
 
