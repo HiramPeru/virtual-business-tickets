@@ -1,0 +1,52 @@
+import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/app/lib/supabase-server";
+
+export const dynamic = "force-dynamic";
+
+const allowedFields = new Set([
+  "status",
+  "priority",
+  "assigned_to",
+  "category",
+  "subcategory",
+  "platform",
+  "description",
+  "subject"
+]);
+
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  const { supabase, user } = await requireUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const body = await request.json();
+  const updates: Record<string, string | null> = {};
+
+  for (const [key, value] of Object.entries(body)) {
+    if (allowedFields.has(key)) {
+      updates[key] = value === "" ? null : String(value);
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No hay campos válidos para actualizar" }, { status: 400 });
+  }
+
+  updates.updated_by = user.id;
+
+  const { data, error } = await supabase
+    .from("tickets")
+    .update(updates)
+    .eq("id", id)
+    .select("*")
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ ticket: data });
+}
