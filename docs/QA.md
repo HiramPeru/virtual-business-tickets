@@ -1,4 +1,4 @@
-# Checklist de Pruebas
+# QA Checklist
 
 ## Build
 
@@ -6,66 +6,70 @@
 npm run build
 ```
 
-Debe terminar sin errores TypeScript.
+The build must finish without TypeScript errors.
 
-## Autenticacion
+## Authentication
 
-- Abrir `/setup`.
-- Crear primer admin.
-- Confirmar que `/setup` queda cerrado despues de existir el primer perfil.
-- Confirmar correo si Supabase lo solicita.
-- Entrar por `/login`.
-- Confirmar redireccion a `/tickets`.
-- Cerrar sesion.
-- Confirmar que `/tickets` redirige a `/login`.
-- Probar que `/login?next=https://example.com` redirige a `/tickets`, no al dominio externo.
+- Open `/setup`.
+- Create the first admin user.
+- Confirm that `/setup` is closed after the first profile exists.
+- Confirm email if Supabase requires it.
+- Log in through `/login`.
+- Confirm redirect to `/tickets`.
+- Log out.
+- Confirm that `/tickets` redirects to `/login` when no session exists.
+- Test that `/login?next=https://example.com` redirects to `/tickets`, not to the external domain.
 
-## Clientes
+## Customers
 
-- Crear cliente principal `WOW Perú` o confirmar que existe.
-- Crear cliente desde `/customers/new`.
-- Asociar empresa a un cliente principal.
-- Verificar que aparece en `/customers`.
-- Crear cliente desde `/tickets/new` usando `Nuevo cliente`.
-- Buscar cliente por email.
-- Buscar cliente por nombre.
+- Create or confirm a demo parent customer.
+- Create a customer from `/customers/new`.
+- Associate a company with a parent customer.
+- Verify that it appears in `/customers`.
+- Create a customer from `/tickets/new` using `New customer`.
+- Search customer by a synthetic email.
+- Search customer by a synthetic name.
 
 ## Tickets
 
-- Crear ticket con cliente existente.
-- Crear ticket con cliente nuevo.
-- Verificar codigo automatico `T-YYYYMMDD-0001`.
-- Probar filtros por estado, prioridad, categoria y plataforma.
-- Abrir detalle.
-- Cambiar estado.
-- Cambiar prioridad.
-- Asignar tecnico.
-- Editar descripcion.
-- Confirmar que el historial registra cambios principales.
+- Create a ticket with an existing demo customer.
+- Create a ticket with a new demo customer.
+- Verify the automatic code format `T-YYYYMMDD-0001`.
+- Test filters by status, priority, category and platform.
+- Open ticket detail.
+- Change status.
+- Change priority.
+- Assign technician.
+- Edit description.
+- Confirm that history records the main changes.
 
-## Comentarios
+## Comments
 
-- Agregar comentario interno.
-- Agregar comentario marcado como visible para cliente futuro.
-- Confirmar estilo diferenciado en el detalle.
+- Add an internal comment.
+- Add a comment marked as visible for a future customer portal.
+- Confirm differentiated styling in the detail page.
 
-## Perfil
+## Profile
 
-- Cambiar nombre completo.
-- Verificar que el nombre aparece en la cabecera y comentarios nuevos.
-- Confirmar que no existe control UI para cambiar rol.
+- Change the visible full name.
+- Verify that the name appears in the header and in new comments.
+- Confirm that the UI does not expose role changes from the profile page.
 
-## Usuarios
+## Users
 
-- Crear un usuario `operator`.
-- Crear un usuario `client_readonly` asociado a WOW Perú.
-- Confirmar que `client_readonly` ve tickets de WOW Perú sin botones de crear, editar ni comentar.
-- Confirmar que `client_readonly` no ve `Clientes`, `Clientes principales` ni `Usuarios`.
+- Create an `operator` user using synthetic data.
+- Create a `client_readonly` user linked to a demo parent customer.
+- Confirm that `client_readonly` can view assigned tickets without create, edit or comment actions.
+- Confirm that `client_readonly` does not see customer, parent-customer or user administration sections.
 
-## Produccion
+## Production / Demo Deployment
 
-- Abrir https://virtual-business-tickets.vercel.app/login.
-- Ingresar con usuario real.
-- Crear un cliente de prueba.
-- Crear un ticket de prueba.
-- Cerrar o resolver el ticket de prueba.
+- Open the deployed `/login` route.
+- Log in with a demo or test user.
+- Create a demo customer.
+- Create a demo ticket.
+- Resolve or close the demo ticket.
+
+## Showcase Rules
+
+For public screenshots or demos, use only synthetic data. Do not use real customers, real tickets, real contact data or production-only operational records.
