@@ -1,92 +1,117 @@
-# Guia de Operacion
+# Operation Guide
 
-## URLs
+## Overview
 
-- Produccion: https://virtual-business-tickets.vercel.app
-- Setup inicial: https://virtual-business-tickets.vercel.app/setup
-- Login: https://virtual-business-tickets.vercel.app/login
-- Tickets: https://virtual-business-tickets.vercel.app/tickets
-- Clientes: https://virtual-business-tickets.vercel.app/customers
+This guide describes the operational flow for the Virtual Business Tickets application using sanitized route examples.
 
-## Primer Admin
+Production URLs and real customer references are intentionally excluded so this document can be used as part of a public or portfolio-oriented showcase.
 
-1. Entrar a `/setup`.
-2. Registrar nombre, email y contrasena.
-3. Si no existe ningun perfil en `profiles`, Supabase crea el perfil con `role = 'admin'`.
-4. Si ya existe un perfil, `/setup` queda cerrado.
-5. Si Supabase exige confirmacion de correo, confirmar el email antes de entrar.
-6. Ingresar por `/login`.
+## Main Routes
 
-## Alta de Usuarios
+- `/setup`: initial setup and first-admin creation.
+- `/login`: user login.
+- `/tickets`: ticket list.
+- `/tickets/new`: ticket creation.
+- `/tickets/[id]`: ticket detail.
+- `/customers`: customer and contact list.
+- `/customers/new`: customer creation.
+- `/profile`: visible technician profile.
 
-- Los usuarios creados despues del primer admin quedan con `role = 'pending'` si no los habilita un admin.
-- Un perfil `pending` no puede leer ni modificar datos operativos.
-- Un admin puede crear usuarios desde `Usuarios`.
-- El rol `operator` opera tickets y clientes internos.
-- El rol `client_readonly` se vincula a un cliente principal y solo ve su historico.
+## First Admin
 
-## Clientes Principales
+1. Open `/setup`.
+2. Register the first user.
+3. If no profile exists in `profiles`, Supabase creates the profile with `role = 'admin'`.
+4. If a profile already exists, `/setup` is closed.
+5. If email confirmation is required by Supabase, confirm the account before logging in.
+6. Log in through `/login`.
 
-- `Clientes principales` agrupa empresas atendidas por Virtual Business.
-- WOW Perú queda creado como cliente principal inicial.
-- Cada empresa cliente debe asociarse a un cliente principal.
+## User Management
 
-## Uso Diario
+- Users created after the first admin remain as `pending` until enabled by an admin.
+- A `pending` profile cannot read or modify operational data.
+- An admin can create and enable users from the application.
+- The `operator` role can work with tickets and customer records.
+- The `client_readonly` role is linked to a parent customer and can only read the corresponding historical records.
 
-### Gestionar Clientes
+## Parent Customers
 
-**Crear Cliente:**
-1. Ir a `Clientes`.
-2. Usar `Nuevo cliente`.
-3. Registrar email obligatorio, nombre, empresa, RUC y telefono si aplica.
+Parent customers group multiple companies under a managed account.
 
-Tambien se puede crear un cliente desde `Nuevo ticket` usando el bloque `Nuevo cliente`.
+Each customer company should be associated with a parent customer when applicable.
 
-**Editar Cliente:**
-1. Ir a `Clientes`.
-2. Hacer clic en el icono de edición (lápiz) en la fila del cliente.
-3. Modificar los campos necesarios del contacto o empresa.
-*Nota: Si se modifica el nombre de la empresa, RUC o cliente principal, el cambio afectará a la empresa asociada o vinculará el contacto a una nueva.*
+## Daily Use
 
-### Crear Ticket
+### Manage Customers
 
-1. Ir a `Tickets`.
-2. Seleccionar `Nuevo ticket`.
-3. Buscar cliente por email o nombre.
-4. Completar categoria, plataforma, prioridad, asunto y descripcion.
-5. Guardar. La app redirige al detalle del ticket.
+**Create customer:**
 
-### Gestionar Ticket
+1. Go to `Customers`.
+2. Select `New customer`.
+3. Register the required customer and company fields.
 
-En el detalle se puede:
+A customer can also be created during ticket creation from the `New customer` section.
 
-- Cambiar estado.
-- Cambiar prioridad.
-- Asignar tecnico.
-- Editar categoria, plataforma, subcategoria, asunto y descripcion.
-- Agregar comentarios internos o marcados como visibles para cliente futuro.
-- Revisar historial automatico de creacion, estado, prioridad y asignacion.
+**Edit customer:**
 
-## Estados
+1. Go to `Customers`.
+2. Select the edit action in the customer row.
+3. Modify the required contact or company fields.
 
-- `New`: recien creado.
-- `Assigned`: asignado a un tecnico.
-- `In Progress`: en atencion.
-- `Pending Customer`: esperando informacion del cliente.
-- `Resolved`: resuelto tecnicamente.
-- `Closed`: cerrado operativamente.
+If the company or parent customer is modified, the related company association may also change.
 
-## Prioridades
+### Create Ticket
 
-- `Critical`: impacto alto o urgencia inmediata.
-- `High`: importante, requiere atencion pronta.
-- `Medium`: prioridad normal.
-- `Low`: consulta o tarea no urgente.
+1. Go to `Tickets`.
+2. Select `New ticket`.
+3. Search for the customer.
+4. Complete category, platform, priority, subject and description.
+5. Save the ticket.
+6. The application redirects to the ticket detail page.
 
-## Reglas Operativas
+### Manage Ticket
 
-- El ticket se crea manualmente. No hay ingestion automatica de correo en esta v1.
-- El cliente debe existir como contacto antes de crear el ticket, aunque puede crearse durante el alta del ticket.
-- No se debe cambiar el codigo del ticket.
-- El cierre debe usarse cuando el caso ya no requiere accion.
-- Los comentarios `customer_visible` estan preparados para portal futuro; por ahora siguen dentro del panel tecnico.
+From the ticket detail page, an operator can:
+
+- Change status.
+- Change priority.
+- Assign technician.
+- Edit category, platform, subcategory, subject and description.
+- Add internal comments.
+- Add comments marked as customer-visible for future portal use.
+- Review automatic history for creation, status, priority and assignment events.
+
+## Status Values
+
+- `New`: recently created.
+- `Assigned`: assigned to a technician.
+- `In Progress`: actively being worked on.
+- `Pending Customer`: waiting for customer information.
+- `Resolved`: technically resolved.
+- `Closed`: operationally closed.
+
+## Priority Values
+
+- `Critical`: high impact or immediate urgency.
+- `High`: important and requires prompt attention.
+- `Medium`: normal priority.
+- `Low`: non-urgent request or consultation.
+
+## Operating Rules
+
+- Tickets are created manually in v1.
+- There is no automatic email ingestion in this version.
+- A customer contact must exist before a ticket is created, although the contact can be created during the ticket creation flow.
+- The ticket code must not be manually changed.
+- Closing a ticket should be used only when no further action is required.
+- `customer_visible` comments are prepared for a future customer portal; in v1 they remain within the technical panel.
+
+## Public Showcase Rules
+
+Do not include in screenshots or documentation:
+
+1. Real customer names.
+2. Real support cases.
+3. Real contact data.
+4. Production URLs.
+5. Internal-only procedures that should not be public.
