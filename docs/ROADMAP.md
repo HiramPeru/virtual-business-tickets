@@ -1,38 +1,56 @@
 # Roadmap
 
-## V1 Actual
+## Current V1
 
-- Sistema interno para tecnicos.
-- Entrada manual de tickets.
-- Clientes, tickets, comentarios e historial.
-- Primer admin via `/setup`.
-- Supabase RLS basico para usuarios autenticados.
-- Deploy en Vercel.
+- Internal system for technical operators.
+- Manual ticket entry.
+- Customers, tickets, comments and history.
+- First-admin setup through `/setup`.
+- Supabase RLS baseline for authenticated users.
+- Deployment on Vercel.
+- Parent-customer grouping.
+- Operator and customer read-only roles.
 
-## Mejoras Prioritarias
+## Priority Improvements
 
-1. Edición de clientes (contacto, empresa, RUC y cliente principal).
-2. Exportacion Excel/CSV de tickets y clientes.
-3. Adjuntos con Supabase Storage.
-4. Dashboard operativo: abiertos, vencidos, por tecnico y por plataforma.
-5. SLA y fechas objetivo por prioridad.
-6. Notificaciones por email.
-7. Invitacion/alta controlada de tecnicos desde admin.
-8. Auditoria mas completa de cambios de campos.
-9. Busqueda global por codigo, asunto, cliente y descripcion.
+1. Export tickets and customers to Excel or CSV.
+2. Attachments with Supabase Storage.
+3. Operational dashboard: open tickets, overdue tickets, tickets by technician and tickets by platform.
+4. SLA and target dates by priority.
+5. Email notifications.
+6. More complete audit trail for editable fields.
+7. Global search by code, subject, customer and description.
+8. Demo seed data for portfolio screenshots.
+9. Automated tests for the main API routes.
+10. Public showcase repository or sanitized public branch.
 
-## Futuro
+## Future Scope
 
-- Portal de cliente.
-- Comentarios realmente visibles para cliente.
-- Ingestion de correo o integracion con buzones.
-- Integracion WhatsApp.
-- Reporte mensual por cliente y plataforma.
-- Roles mas granulares.
+- Customer portal.
+- Truly customer-visible comments.
+- Email ingestion or mailbox integration.
+- WhatsApp integration.
+- Monthly report by customer and platform.
+- More granular roles.
+- Multi-tenant hardening.
+- CI checks for lint, build and dependency review.
 
-## Deuda Tecnica
+## Technical Debt
 
-- Persistir variables de Vercel desde dashboard para no pasarlas por CLI en cada despliegue.
-- Agregar tests automatizados para APIs principales.
-- Definir politica de backups y retencion.
-- Revisar dependencias con `npm audit` antes de uso productivo amplio.
+- Persist deployment variables in the platform dashboard instead of passing values through CLI.
+- Add automated tests for core API routes.
+- Define backup and retention policy.
+- Review dependencies before broader production use.
+- Add sample data scripts using only synthetic records.
+- Add screenshots with demo records.
+
+## Portfolio Track
+
+To make the project suitable for public presentation:
+
+1. Keep production information out of documentation.
+2. Use only synthetic data in screenshots.
+3. Avoid exposing real customer names or operational records.
+4. Add architecture diagrams.
+5. Add a short product demo flow.
+6. Publish either a sanitized branch or a separate showcase repository.
