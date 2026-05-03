@@ -48,6 +48,47 @@ export function UserRoleForm({
     router.refresh();
   }
 
+  async function handleChangePassword() {
+    const newPassword = prompt("Ingresa la nueva contraseña para el usuario (mínimo 6 caracteres):");
+    if (!newPassword) return;
+
+    setError("");
+    setLoading(true);
+    const response = await fetch(`/api/users/${profile.id}/password`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password: newPassword })
+    });
+    const data = await response.json();
+    setLoading(false);
+
+    if (!response.ok) {
+      setError(data.error || "No se pudo cambiar la contraseña");
+      return;
+    }
+
+    alert("Contraseña actualizada exitosamente.");
+  }
+
+  async function handleDelete() {
+    if (!confirm("¿Estás seguro de que quieres eliminar a este usuario de manera irreversible? (Si ya tiene tickets creados, la base de datos bloqueará el borrado).")) return;
+
+    setError("");
+    setLoading(true);
+    const response = await fetch(`/api/users/${profile.id}`, {
+      method: "DELETE"
+    });
+    const data = await response.json();
+    setLoading(false);
+
+    if (!response.ok) {
+      setError(data.error || "No se pudo eliminar el usuario");
+      return;
+    }
+
+    router.refresh();
+  }
+
   return (
     <form onSubmit={submit} style={{ display: "grid", gap: 8, minWidth: 320 }}>
       {error ? <div className="alert">{error}</div> : null}
@@ -68,9 +109,17 @@ export function UserRoleForm({
           ))}
         </select>
       ) : null}
-      <button className="button secondary" disabled={loading} type="submit">
-        {loading ? "Guardando..." : "Guardar"}
-      </button>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button className="button secondary" disabled={loading} type="submit" style={{ flex: 1 }}>
+          {loading ? "Guardando..." : "Guardar"}
+        </button>
+        <button className="button" disabled={loading} type="button" onClick={handleChangePassword} style={{ flex: 1 }}>
+          Cambiar Clave
+        </button>
+        <button className="button danger" disabled={loading} type="button" onClick={handleDelete} style={{ flex: 1 }}>
+          Eliminar
+        </button>
+      </div>
     </form>
   );
 }

@@ -1,5 +1,8 @@
 import { PrincipalClientForm } from "@/components/PrincipalClientForm";
+import { PrincipalClientEditForm } from "@/components/PrincipalClientEditForm";
 import { getSupabaseServerClient } from "@/app/lib/supabase-server";
+
+export const dynamic = "force-dynamic";
 
 type PrincipalClientRow = {
   id: string;
@@ -36,6 +39,7 @@ export default async function PrincipalClientsPage() {
                 <th>RUC</th>
                 <th>Estado</th>
                 <th>Clientes vinculados</th>
+                <th>Editar</th>
               </tr>
             </thead>
             <tbody>
@@ -49,11 +53,14 @@ export default async function PrincipalClientsPage() {
                     <span className={`badge ${client.status === "active" ? "success" : "warning"}`}>{client.status}</span>
                   </td>
                   <td>{client.companies?.[0]?.count || 0}</td>
+                  <td>
+                    <PrincipalClientEditForm client={client} />
+                  </td>
                 </tr>
               ))}
               {clients.length === 0 ? (
                 <tr>
-                  <td className="muted" colSpan={4}>
+                  <td className="muted" colSpan={5}>
                     No hay clientes principales registrados.
                   </td>
                 </tr>

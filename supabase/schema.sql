@@ -358,6 +358,8 @@ CREATE POLICY comments_insert_internal ON ticket_comments
 
 CREATE POLICY events_read_scoped ON ticket_events
   FOR SELECT TO authenticated USING (public.can_read_ticket(ticket_id));
+CREATE POLICY events_insert_internal ON ticket_events
+  FOR INSERT TO authenticated WITH CHECK (public.is_internal_user());
 
 CREATE OR REPLACE FUNCTION create_profile_for_new_user()
 RETURNS TRIGGER AS $$

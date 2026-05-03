@@ -41,3 +41,44 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
   return NextResponse.json({ profile: data });
 }
+
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { supabase, user } = await requireUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  const { data: currentProfile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+
+  if (currentProfile?.role !== "admin") {
+    return NextResponse.json({ error: "Solo un admin puede eliminar usuarios" }, { status: 403 });
+  }
+
+  if (user.id === id) {
+    return NextResponse.json({ error: "No puedes eliminar tu propia cuenta" }, { status: 400 });
+  }
+
+  // Inicializar el cliente de Admin
+  const { createClient } = await import("@supabase/supabase-js");
+  const { getSupabaseEnv, getSupabaseServiceRoleKey } = await import("@/app/lib/env");
+  const { url } = getSupabaseEnv();
+  const serviceRoleKey = getSupabaseServiceRoleKey();
+
+  if (!serviceRoleKey) {
+    return NextResponse.json({ error: "Clave de servicio no configurada" }, { status: 500 });
+  }
+
+  const supabaseAdmin = createClient(url, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false }
+  });
+
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 });
+  }
+
+  return NextResponse.json({ success: true, message: "Usuario eliminado exitosamente" });
+}

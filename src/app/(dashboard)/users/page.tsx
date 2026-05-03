@@ -3,6 +3,8 @@ import { UserRoleForm } from "@/components/UserRoleForm";
 import { getSupabaseServerClient } from "@/app/lib/supabase-server";
 import { roleLabel } from "@/app/lib/options";
 
+export const dynamic = "force-dynamic";
+
 type PrincipalClient = { id: string; name: string };
 type UserProfile = {
   id: string;
