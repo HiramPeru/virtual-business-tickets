@@ -1,60 +1,59 @@
-# Supabase y Base de Datos
+# Supabase and Database
 
-## Proyecto
+## Overview
 
-- Project ref: `rbopvzwqcgnwtwwmptxr`
-- URL: `https://rbopvzwqcgnwtwwmptxr.supabase.co`
-- Dashboard: https://supabase.com/dashboard/project/rbopvzwqcgnwtwwmptxr
+The application uses Supabase as the authentication and database layer.
 
-## Variables
+Production identifiers, dashboard URLs and real environment values are intentionally excluded from this document so the repository can be used safely as a portfolio or showcase reference.
 
-```bash
-NEXT_PUBLIC_SUPABASE_URL=https://rbopvzwqcgnwtwwmptxr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-```
+## Environment Variables
 
-No versionar `.env.local`.
+Required variables are documented in `.env.example` with empty values.
 
-## Archivos
+Do not commit local environment files or production credentials.
 
-- `supabase/schema.sql`: snapshot legible del esquema completo.
-- `supabase/migrations/202605012353_initial_schema.sql`: migracion inicial.
-- `supabase/migrations/202605020340_first_user_admin.sql`: actualiza el trigger para que el primer perfil sea admin.
-- `supabase/migrations/202605020500_harden_auth_policies.sql`: cierra acceso operativo para cuentas pendientes y endurece RLS.
-- `supabase/migrations/202605020620_principal_clients_and_users.sql`: agrega clientes principales, roles de operador y acceso cliente solo lectura.
+Privileged server-side credentials must only be configured in trusted server-side environments and must never be exposed to browser code.
 
-## Tablas
+## Files
 
-- `companies`: empresas clientes.
-- `principal_clients`: clientes principales como WOW Perú que agrupan empresas.
-- `contacts`: contactos asociados a empresas.
-- `profiles`: usuarios internos y externos, roles `admin`, `operator`, `client_readonly` o `pending`.
-- `ticket_daily_counters`: secuencia diaria para codigos.
-- `tickets`: tickets principales.
-- `ticket_comments`: comentarios del ticket.
-- `ticket_events`: historial automatico.
+- `supabase/schema.sql`: readable snapshot of the database schema.
+- `supabase/migrations/202605012353_initial_schema.sql`: initial migration.
+- `supabase/migrations/202605020340_first_user_admin.sql`: updates the trigger so the first profile becomes admin.
+- `supabase/migrations/202605020500_harden_auth_policies.sql`: blocks operational access for pending accounts and hardens RLS.
+- `supabase/migrations/202605020620_principal_clients_and_users.sql`: adds parent customers, operator roles and customer read-only access.
 
-## Codigo de Ticket
+## Tables
 
-El trigger genera codigos con formato:
+- `companies`: customer companies.
+- `principal_clients`: parent customers used to group companies under a managed account.
+- `contacts`: contacts associated with companies.
+- `profiles`: internal and external users with `admin`, `operator`, `client_readonly` or `pending` roles.
+- `ticket_daily_counters`: daily sequence for ticket codes.
+- `tickets`: main ticket records.
+- `ticket_comments`: ticket comments.
+- `ticket_events`: automatic history records.
+
+## Ticket Code
+
+The database trigger generates ticket codes with the following format:
 
 ```text
 T-YYYYMMDD-0001
 ```
 
-La tabla `ticket_daily_counters` evita colisiones por concurrencia.
+The `ticket_daily_counters` table prevents collisions under concurrent creation scenarios.
 
-## Primer Admin
+## First Admin
 
-El trigger `create_profile_for_new_user()` crea un perfil al registrarse un usuario:
+The `create_profile_for_new_user()` trigger creates a profile when a user signs up:
 
-- Si no existe ningun perfil, el rol queda como `admin`.
-- Si ya existe al menos un perfil, el rol queda como `pending`.
-- `/setup` consulta `has_any_profile()` y queda cerrado cuando ya existe un perfil.
+- If no profile exists, the role is set to `admin`.
+- If at least one profile exists, the role is set to `pending`.
+- `/setup` calls `has_any_profile()` and closes the setup flow after the first profile exists.
 
-## RLS
+## Row Level Security
 
-RLS esta activo en:
+RLS is enabled for:
 
 - `companies`
 - `contacts`
@@ -63,19 +62,28 @@ RLS esta activo en:
 - `ticket_comments`
 - `ticket_events`
 
-La v1 permite operar tickets y clientes solo a perfiles `admin` u `operator`. Los usuarios `client_readonly` solo pueden leer tickets, historial y comentarios visibles de su cliente principal. Las cuentas `pending` pueden existir en Auth, pero RLS les bloquea clientes, tickets, comentarios e historial.
+The v1 model allows operational work only for `admin` and `operator` profiles. `client_readonly` users can only read tickets, history and visible comments for their assigned parent customer. `pending` accounts can exist in Auth but are blocked by RLS from reading or modifying operational records.
 
-Para crear usuarios desde la app, Vercel debe tener `SUPABASE_SERVICE_ROLE_KEY` como variable de entorno de produccion. No debe exponerse en cliente ni versionarse.
-
-## Aplicar Migraciones
+## Apply Migrations
 
 ```bash
 npx supabase db push
 ```
 
-## Riesgos Pendientes
+## Public Showcase Rules
 
-- No hay politica granular por cliente o tenant.
-- No hay portal de cliente.
-- No hay auditoria completa de todos los campos editables, solo eventos principales.
-- No hay backups configurados desde este repo; dependen del plan Supabase.
+Do not expose:
+
+1. Real Supabase project references.
+2. Dashboard URLs.
+3. Production credentials.
+4. Real customer data.
+5. Real ticket records.
+6. Internal user emails.
+
+## Pending Risks / Hardening Items
+
+- Review tenant-level isolation for larger multi-customer scenarios.
+- Expand audit history to all editable fields.
+- Document backup and retention policies according to the selected Supabase plan.
+- Add automated security checks to CI.
