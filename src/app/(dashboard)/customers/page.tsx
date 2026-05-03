@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { getSupabaseServerClient } from "@/app/lib/supabase-server";
 
 type ContactRow = {
@@ -41,6 +41,7 @@ export default async function CustomersPage() {
               <th>Empresa</th>
               <th>Cliente principal</th>
               <th>Teléfono</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -54,6 +55,11 @@ export default async function CustomersPage() {
                 </td>
                 <td>{contact.company?.principal_client?.name || "-"}</td>
                 <td>{contact.phone || "-"}</td>
+                <td style={{ textAlign: "right" }}>
+                  <Link href={`/customers/${contact.id}`} className="button" style={{ padding: "0.25rem 0.5rem", display: "inline-flex" }} title="Editar">
+                    <Pencil size={14} />
+                  </Link>
+                </td>
               </tr>
             ))}
           </tbody>

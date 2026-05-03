@@ -33,13 +33,20 @@
 
 ## Uso Diario
 
-### Crear Cliente
+### Gestionar Clientes
 
+**Crear Cliente:**
 1. Ir a `Clientes`.
 2. Usar `Nuevo cliente`.
 3. Registrar email obligatorio, nombre, empresa, RUC y telefono si aplica.
 
 Tambien se puede crear un cliente desde `Nuevo ticket` usando el bloque `Nuevo cliente`.
+
+**Editar Cliente:**
+1. Ir a `Clientes`.
+2. Hacer clic en el icono de edición (lápiz) en la fila del cliente.
+3. Modificar los campos necesarios del contacto o empresa.
+*Nota: Si se modifica el nombre de la empresa, RUC o cliente principal, el cambio afectará a la empresa asociada o vinculará el contacto a una nueva.*
 
 ### Crear Ticket
 

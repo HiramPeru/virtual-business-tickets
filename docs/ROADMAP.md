@@ -11,13 +11,15 @@
 
 ## Mejoras Prioritarias
 
-1. Adjuntos con Supabase Storage.
-2. Dashboard operativo: abiertos, vencidos, por tecnico y por plataforma.
-3. SLA y fechas objetivo por prioridad.
-4. Notificaciones por email.
-5. Invitacion/alta controlada de tecnicos desde admin.
-6. Auditoria mas completa de cambios de campos.
-7. Busqueda global por codigo, asunto, cliente y descripcion.
+1. Edición de clientes (contacto, empresa, RUC y cliente principal).
+2. Exportacion Excel/CSV de tickets y clientes.
+3. Adjuntos con Supabase Storage.
+4. Dashboard operativo: abiertos, vencidos, por tecnico y por plataforma.
+5. SLA y fechas objetivo por prioridad.
+6. Notificaciones por email.
+7. Invitacion/alta controlada de tecnicos desde admin.
+8. Auditoria mas completa de cambios de campos.
+9. Busqueda global por codigo, asunto, cliente y descripcion.
 
 ## Futuro
 
@@ -25,7 +27,6 @@
 - Comentarios realmente visibles para cliente.
 - Ingestion de correo o integracion con buzones.
 - Integracion WhatsApp.
-- Exportacion Excel/CSV.
 - Reporte mensual por cliente y plataforma.
 - Roles mas granulares.
 
