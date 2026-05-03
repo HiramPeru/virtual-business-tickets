@@ -1,63 +1,61 @@
-# Despliegue en Vercel
+# Vercel Deployment
 
-## Proyecto
+## Overview
 
-- Produccion: https://virtual-business-tickets.vercel.app
-- Proyecto Vercel: `virtual-business-tickets`
-- Cuenta/scope usado por CLI: `co7150208-6207`
+The application is designed to be deployed on Vercel as a Next.js project.
 
-## Variables de Entorno
+Production deployment URLs, account scopes and project identifiers are intentionally excluded from this document so the repository can be used safely as a portfolio or showcase reference.
 
-Configurar en Vercel:
+## Environment Variables
 
-```bash
-NEXT_PUBLIC_SUPABASE_URL=https://rbopvzwqcgnwtwwmptxr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-```
+Configure the required Supabase-related environment variables in Vercel Project Settings.
 
-En los despliegues iniciales se pasaron con `--build-env` y `--env`. Para mantenimiento normal, conviene dejarlas guardadas en Vercel Project Settings.
+Use `.env.example` as the reference for variable names and keep real values outside version control.
 
-## Despliegue Manual
+## Manual Deployment
 
 ```bash
 npx vercel --prod --yes
 ```
 
-Si las variables no estan guardadas en Vercel, usar:
+For regular maintenance, environment variables should be stored in Vercel Project Settings rather than passed manually in CLI commands.
+
+## Verification
+
+Use the deployment URL assigned by Vercel and validate the main routes:
 
 ```bash
-npx vercel --prod --yes \
-  --build-env NEXT_PUBLIC_SUPABASE_URL=... \
-  --build-env NEXT_PUBLIC_SUPABASE_ANON_KEY=... \
-  --env NEXT_PUBLIC_SUPABASE_URL=... \
-  --env NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+curl -I https://your-deployment-domain/login
+curl -I https://your-deployment-domain/setup
 ```
 
-## Verificacion
+Expected behavior:
 
-```bash
-curl -I https://virtual-business-tickets.vercel.app
-curl -I https://virtual-business-tickets.vercel.app/login
-curl -I https://virtual-business-tickets.vercel.app/setup
-```
+- `/` responds and redirects to `/tickets`.
+- `/tickets` without a session redirects to `/login?next=%2Ftickets`.
+- `/login` responds successfully.
+- `/setup` responds when accessed without a session, subject to first-admin setup rules.
 
-Comportamiento esperado:
+## Important Files
 
-- `/` responde y redirige a `/tickets`.
-- `/tickets` sin sesion redirige a `/login?next=%2Ftickets`.
-- `/login` responde `200`.
-- `/setup` responde `200` si no hay sesion.
-
-## Archivos Importantes
-
-- `.vercelignore`: evita subir `.env.local`, `.next`, `node_modules` y metadata local.
-- `.env.local`: solo local, no versionado.
-- `.vercel/`: metadata local de Vercel, no debe revisarse ni tocarse sin necesidad.
+- `.vercelignore`: prevents `.env.local`, `.next`, `node_modules` and local metadata from being uploaded.
+- `.env.local`: local-only environment file; must not be committed.
+- `.vercel/`: local Vercel metadata; should not be reviewed or edited unless needed.
 
 ## Logs
 
 ```bash
-npx vercel logs https://virtual-business-tickets.vercel.app
+npx vercel logs https://your-deployment-domain
 ```
 
-En Vercel CLI actual, `logs` puede quedar en streaming esperando nuevos eventos.
+Depending on the Vercel CLI version, `logs` may remain in streaming mode waiting for new events.
+
+## Public Showcase Rules
+
+Do not expose:
+
+1. Production deployment URLs that reveal internal workflows.
+2. Vercel project identifiers.
+3. Vercel account or scope identifiers.
+4. Production environment values.
+5. Internal deployment logs containing sensitive data.
