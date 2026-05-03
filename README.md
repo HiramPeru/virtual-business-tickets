@@ -1,39 +1,91 @@
 # Virtual Business Tickets
 
-Sistema interno de tickets para Virtual Business, construido con Next.js App Router, Vercel y Supabase.
+Internal ticketing platform designed for MSP operations, built with Next.js, TypeScript, Supabase and Vercel.
 
-## Estado Actual
+## Overview
 
-- Produccion: https://virtual-business-tickets.vercel.app
-- Supabase project ref: `rbopvzwqcgnwtwwmptxr`
-- Supabase dashboard: https://supabase.com/dashboard/project/rbopvzwqcgnwtwwmptxr
-- Stack: Next.js 16, React, TypeScript, Supabase Auth/Postgres/RLS, Vercel.
-- Branch local: `main`
+Virtual Business Tickets is a web-based support management system created to centralize operational ticket handling for managed IT services.
 
-## Funcionalidad Incluida
+The platform supports internal operators, customer entities, contact management, protected workflows, ticket lifecycle tracking, comments, assignments, priorities, status changes and audit history.
 
-- Login con Supabase Auth.
-- Ruta `/setup` para crear el primer admin.
-- Rutas protegidas para tickets, clientes y perfil.
-- Clientes separados en empresas y contactos.
-- Clientes principales para agrupar empresas atendidas, con WOW Perú como caso inicial.
-- Usuarios `operator` para operación interna y `client_readonly` para coordinadores/clientes que solo consultan histórico.
-- Creacion manual de tickets para Activacion Cloud, Soporte y Consulta.
-- Filtros por estado, prioridad, categoria y plataforma.
-- Detalle de ticket con comentarios, asignacion, prioridad, estado e historial.
-- Perfil de tecnico editable sin permitir cambio de rol desde la UI.
-- SQL de Supabase con RLS, triggers de codigo diario e historial de cambios.
+This repository can be used as a technical portfolio showcase. Sensitive production configuration, credentials, customer data and operational records are not included.
 
-## Documentacion
+## Core Capabilities
 
-- [Guia de operacion](docs/OPERACION.md)
-- [Arquitectura tecnica](docs/ARQUITECTURA.md)
-- [Supabase y base de datos](docs/SUPABASE.md)
-- [Despliegue en Vercel](docs/VERCEL.md)
-- [Checklist de pruebas](docs/QA.md)
+- Supabase Auth login.
+- Protected application routes.
+- First-admin setup workflow.
+- Customer management for companies and contacts.
+- Parent customer grouping for managed accounts.
+- Role-based access model:
+  - `admin`
+  - `operator`
+  - `client_readonly`
+  - `pending`
+- Manual ticket creation for:
+  - Cloud activation
+  - Support
+  - General consultation
+- Ticket filters by:
+  - Status
+  - Priority
+  - Category
+  - Platform
+- Ticket detail view with:
+  - Comments
+  - Assignment
+  - Priority
+  - Status
+  - Change history
+- Editable technician profile.
+- Supabase Postgres schema with:
+  - Row Level Security
+  - Triggers
+  - Daily ticket codes
+  - Audit history
+
+## Technical Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | Next.js App Router |
+| Language | TypeScript |
+| UI | React, Tailwind CSS, lucide-react |
+| Authentication | Supabase Auth |
+| Database | Supabase Postgres |
+| Security | Row Level Security |
+| Deployment | Vercel |
+| Quality | ESLint |
+
+## Architecture
+
+```text
+User
+  ↓
+Next.js App Router
+  ↓
+Protected Routes / Server Components / Client Components
+  ↓
+Supabase Auth
+  ↓
+Supabase Postgres
+  ↓
+RLS Policies + Triggers + Audit History
+```
+
+## Documentation
+
+- [Showcase overview](docs/SHOWCASE.md)
+- [Operation guide](docs/OPERACION.md)
+- [Technical architecture](docs/ARQUITECTURA.md)
+- [Supabase and database](docs/SUPABASE.md)
+- [Security model](docs/SECURITY_MODEL.md)
+- [Vercel deployment](docs/VERCEL.md)
+- [QA checklist](docs/QA.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Screenshots guide](screenshots/README.md)
 
-## Instalacion Local
+## Local Development
 
 ```bash
 npm install
@@ -41,32 +93,48 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Completa `.env.local`:
+Required environment variables:
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://rbopvzwqcgnwtwwmptxr.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-## Flujo Inicial
+`SUPABASE_SERVICE_ROLE_KEY` must be used only in trusted server-side contexts and must never be exposed to client-side code.
 
-1. Abre `/setup`.
-2. Crea el primer usuario.
-3. El primer perfil creado queda como `admin`.
-4. Ingresa por `/login`.
-5. Crea clientes y tickets.
+## Initial Flow
 
-Si ya existe al menos un perfil, `/setup` queda cerrado y los usuarios nuevos creados por Supabase quedan como `pending` hasta que un admin los habilite.
+1. Open `/setup`.
+2. Create the first user.
+3. The first profile is assigned the `admin` role.
+4. Log in through `/login`.
+5. Create customers, contacts and tickets.
 
-## Comandos Utiles
+After at least one profile exists, `/setup` is closed. New Supabase users are created as `pending` until an admin enables them.
+
+## Useful Commands
 
 ```bash
 npm run dev
 npm run build
+npm run lint
 npx supabase db push
 npx vercel --prod --yes
 ```
 
-## Notas de Producto
+## Portfolio Notes
 
-Esta v1 es interna para tecnicos. El campo `customer_visible` queda preparado para un futuro portal de clientes, pero por ahora todos los comentarios se gestionan dentro del panel tecnico.
+This project demonstrates:
+
+- Practical SaaS-style application design.
+- MSP-oriented workflow modeling.
+- Role-based access control.
+- Supabase Auth and Postgres integration.
+- Row Level Security implementation.
+- Serverless deployment with Vercel.
+- Internal operations digitization for B2B IT services.
+
+## Status
+
+Private/internal production system. Public-facing material should be treated as a sanitized technical showcase.
