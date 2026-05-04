@@ -26,11 +26,11 @@ BEFORE UPDATE ON principal_clients
 FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
 INSERT INTO principal_clients(name)
-VALUES ('WOW Perú')
+VALUES ('Demo Parent Customer')
 ON CONFLICT (name) DO NOTHING;
 
 UPDATE companies
-SET principal_client_id = (SELECT id FROM principal_clients WHERE name = 'WOW Perú')
+SET principal_client_id = (SELECT id FROM principal_clients WHERE name = 'Demo Parent Customer')
 WHERE principal_client_id IS NULL;
 
 CREATE INDEX IF NOT EXISTS idx_companies_principal_client_id ON companies(principal_client_id);
