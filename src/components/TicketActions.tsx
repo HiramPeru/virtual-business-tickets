@@ -2,7 +2,14 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ticketCategories, ticketPlatforms, ticketPriorities, ticketStatuses } from "@/app/lib/options";
+import {
+  priorityLabel,
+  statusLabel,
+  ticketCategories,
+  ticketPlatforms,
+  ticketPriorities,
+  ticketStatuses
+} from "@/app/lib/options";
 
 type Profile = { id: string; full_name: string | null };
 
@@ -57,7 +64,9 @@ export function TicketActions({ ticket, profiles }: Props) {
           <label>Estado</label>
           <select className="select" defaultValue={ticket.status} name="status">
             {ticketStatuses.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {statusLabel(item)}
+              </option>
             ))}
           </select>
         </div>
@@ -65,7 +74,9 @@ export function TicketActions({ ticket, profiles }: Props) {
           <label>Prioridad</label>
           <select className="select" defaultValue={ticket.priority} name="priority">
             {ticketPriorities.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {priorityLabel(item)}
+              </option>
             ))}
           </select>
         </div>
@@ -84,7 +95,9 @@ export function TicketActions({ ticket, profiles }: Props) {
           <label>Categoría</label>
           <select className="select" defaultValue={ticket.category} name="category">
             {ticketCategories.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         </div>
@@ -92,7 +105,9 @@ export function TicketActions({ ticket, profiles }: Props) {
           <label>Plataforma</label>
           <select className="select" defaultValue={ticket.platform || "Ninguna"} name="platform">
             {ticketPlatforms.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         </div>

@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { CommentForm } from "@/components/CommentForm";
 import { TicketActions } from "@/components/TicketActions";
 import { getSupabaseServerClient } from "@/app/lib/supabase-server";
-import { isInternalRole, priorityClass, statusClass } from "@/app/lib/options";
+import { isInternalRole, priorityClass, priorityLabel, statusClass, statusLabel } from "@/app/lib/options";
 
 type TicketDetail = {
   id: string;
@@ -60,8 +60,8 @@ export default async function TicketDetailPage({ params }: { params: Promise<{ i
           <p>{ticket.subject}</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          <span className={`badge ${priorityClass(ticket.priority)}`}>{ticket.priority}</span>
-          <span className={`badge ${statusClass(ticket.status)}`}>{ticket.status}</span>
+          <span className={`badge ${priorityClass(ticket.priority)}`}>{priorityLabel(ticket.priority)}</span>
+          <span className={`badge ${statusClass(ticket.status)}`}>{statusLabel(ticket.status)}</span>
         </div>
       </div>
       <div className="grid-two">

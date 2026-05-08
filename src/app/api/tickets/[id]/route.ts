@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/app/lib/supabase-server";
-import { isInternalRole } from "@/app/lib/options";
+import {
+  isInternalRole,
+  isTicketPriority,
+  isTicketStatus,
+  normalizeTicketPriority,
+  normalizeTicketStatus
+} from "@/app/lib/options";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +39,22 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
 
   for (const [key, value] of Object.entries(body)) {
     if (allowedFields.has(key)) {
-      updates[key] = value === "" ? null : String(value);
+      const normalizedValue = value === "" ? null : String(value);
+      if (key === "priority") {
+        const priority = normalizeTicketPriority(normalizedValue);
+        if (!isTicketPriority(priority)) {
+          return NextResponse.json({ error: "Selecciona una prioridad válida" }, { status: 400 });
+        }
+        updates[key] = priority;
+      } else if (key === "status") {
+        const status = normalizeTicketStatus(normalizedValue);
+        if (!isTicketStatus(status)) {
+          return NextResponse.json({ error: "Selecciona un estado válido" }, { status: 400 });
+        }
+        updates[key] = status;
+      } else {
+        updates[key] = normalizedValue;
+      }
     }
   }
 

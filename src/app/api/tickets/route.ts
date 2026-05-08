@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/app/lib/supabase-server";
-import { isInternalRole } from "@/app/lib/options";
+import { isInternalRole, isTicketPriority, normalizeTicketPriority } from "@/app/lib/options";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +44,12 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
+  const priority = normalizeTicketPriority(body.priority);
+
+  if (!isTicketPriority(priority)) {
+    return NextResponse.json({ error: "Selecciona una prioridad válida" }, { status: 400 });
+  }
+
   const payload = {
     contact_id: body.contact_id,
     category: body.category,
@@ -51,7 +57,7 @@ export async function POST(request: NextRequest) {
     platform: body.platform || "Ninguna",
     subject: body.subject,
     description: body.description || null,
-    priority: body.priority || "Medium",
+    priority,
     created_by: user.id,
     updated_by: user.id
   };

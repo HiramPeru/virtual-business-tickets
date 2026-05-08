@@ -4,7 +4,9 @@ import { getSupabaseServerClient } from "@/app/lib/supabase-server";
 import {
   isInternalRole,
   priorityClass,
+  priorityLabel,
   statusClass,
+  statusLabel,
   ticketCategories,
   ticketPlatforms,
   ticketPriorities,
@@ -76,7 +78,9 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
           <select className="select" defaultValue={value(params, "status")} name="status">
             <option value="">Todos</option>
             {ticketStatuses.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {statusLabel(item)}
+              </option>
             ))}
           </select>
         </div>
@@ -85,7 +89,9 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
           <select className="select" defaultValue={value(params, "priority")} name="priority">
             <option value="">Todas</option>
             {ticketPriorities.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {priorityLabel(item)}
+              </option>
             ))}
           </select>
         </div>
@@ -94,7 +100,9 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
           <select className="select" defaultValue={value(params, "category")} name="category">
             <option value="">Todas</option>
             {ticketCategories.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         </div>
@@ -103,7 +111,9 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
           <select className="select" defaultValue={value(params, "platform")} name="platform">
             <option value="">Todas</option>
             {ticketPlatforms.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         </div>
@@ -145,10 +155,10 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
                   </div>
                 </td>
                 <td>
-                  <span className={`badge ${priorityClass(ticket.priority)}`}>{ticket.priority}</span>
+                  <span className={`badge ${priorityClass(ticket.priority)}`}>{priorityLabel(ticket.priority)}</span>
                 </td>
                 <td>
-                  <span className={`badge ${statusClass(ticket.status)}`}>{ticket.status}</span>
+                  <span className={`badge ${statusClass(ticket.status)}`}>{statusLabel(ticket.status)}</span>
                 </td>
                 <td>{new Date(ticket.created_at).toLocaleString("es-PE")}</td>
               </tr>

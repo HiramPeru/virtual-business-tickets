@@ -3,7 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search } from "lucide-react";
-import { ticketCategories, ticketPlatforms, ticketPriorities } from "@/app/lib/options";
+import { priorityLabel, ticketCategories, ticketPlatforms, ticketPriorities } from "@/app/lib/options";
 
 type Contact = {
   id: string;
@@ -184,7 +184,9 @@ export function TicketCreateForm({ principalClients }: { principalClients: Princ
           <label>Categoría</label>
           <select className="select" name="category" required>
             {ticketCategories.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         </div>
@@ -192,7 +194,9 @@ export function TicketCreateForm({ principalClients }: { principalClients: Princ
           <label>Plataforma</label>
           <select className="select" name="platform" required>
             {ticketPlatforms.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {item}
+              </option>
             ))}
           </select>
         </div>
@@ -204,7 +208,9 @@ export function TicketCreateForm({ principalClients }: { principalClients: Princ
           <label>Prioridad</label>
           <select className="select" defaultValue="Medium" name="priority" required>
             {ticketPriorities.map((item) => (
-              <option key={item}>{item}</option>
+              <option key={item} value={item}>
+                {priorityLabel(item)}
+              </option>
             ))}
           </select>
         </div>
