@@ -10,6 +10,7 @@
 - Deployment on Vercel.
 - Parent-customer grouping.
 - Operator and customer read-only roles.
+- Spec Driven Development workflow documented in `docs/SDD.md`.
 
 ## Priority Improvements
 

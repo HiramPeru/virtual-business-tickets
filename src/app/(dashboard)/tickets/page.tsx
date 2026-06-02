@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import { getSupabaseServerClient } from "@/app/lib/supabase-server";
 import {
   isInternalRole,
@@ -66,10 +66,26 @@ export default async function TicketsPage({ searchParams }: { searchParams: Sear
           <p>Solicitudes manuales de activación, soporte y consultas.</p>
         </div>
         {canOperate ? (
-          <Link className="button" href="/tickets/new">
-            <Plus size={16} />
-            Nuevo ticket
-          </Link>
+          <div style={{ display: "flex", gap: 12 }}>
+            <a
+              className="button secondary"
+              href={`/api/tickets/export?${new URLSearchParams(
+                Object.entries(params).reduce((acc, [key, val]) => {
+                  if (val !== undefined && val !== "") {
+                    acc[key] = Array.isArray(val) ? val[0] : String(val);
+                  }
+                  return acc;
+                }, {} as Record<string, string>)
+              ).toString()}`}
+            >
+              <Download size={16} />
+              Exportar CSV
+            </a>
+            <Link className="button" href="/tickets/new">
+              <Plus size={16} />
+              Nuevo ticket
+            </Link>
+          </div>
         ) : null}
       </div>
       <form className="toolbar">

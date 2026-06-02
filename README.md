@@ -80,6 +80,8 @@ RLS Policies + Triggers + Audit History
 - [Technical architecture](docs/ARQUITECTURA.md)
 - [Supabase and database](docs/SUPABASE.md)
 - [Security model](docs/SECURITY_MODEL.md)
+- [Spec Driven Development](docs/SDD.md)
+- [Specs](docs/specs/README.md)
 - [Vercel deployment](docs/VERCEL.md)
 - [QA checklist](docs/QA.md)
 - [Roadmap](docs/ROADMAP.md)
