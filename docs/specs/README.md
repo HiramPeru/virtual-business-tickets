@@ -15,7 +15,7 @@ Cada spec describe una unidad de cambio: una mejora, correccion, modulo, migraci
 
 | Spec | Estado | Resumen |
 |---|---|---|
-| `2026-05-24-auth-access-incident.md` | in_progress | Diagnostico de bloqueo de acceso por Supabase/Auth. |
+| `2026-05-24-auth-access-incident.md` | verified | Diagnostico de bloqueo de acceso por Supabase/Auth. |
 | `2026-05-24-sdd-workflow.md` | verified | Adopcion del flujo SDD y plantilla de specs. |
-| `2026-06-02-ticket-export.md` | approved | Exportación de tickets en formato CSV con filtros activos. |
+| `2026-06-02-ticket-export.md` | verified | Exportación de tickets en formato CSV con filtros activos. |
 | `TEMPLATE.md` | reference | Plantilla base para nuevas specs. |
