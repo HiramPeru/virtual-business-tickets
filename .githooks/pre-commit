@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# repository-memory-layer managed block
+STAGED_FILES=$(git diff --cached --name-only)
+MEMORY_INPUTS=$(printf "%s\n" "$STAGED_FILES" | egrep '^(PROJECT_INSTRUCTIONS\.md|AGENT_RULES\.md|README\.md|AGENTS\.md|docs/ai/CHANGELOG\.md|docs/CHANGELOG\.md|Data/Docs/CHANGELOG\.md|docs/ai/decision-log\.md|docs/decision-log\.md|Data/Docs/decision-log\.md|docs/ai/DECISIONS\.md|docs/DECISIONS\.md|Data/Docs/DECISIONS\.md|docs/ai/architecture\.md|docs/architecture\.md|Data/Docs/architecture\.md|docs/ai/ARCHITECTURE.*\.md|docs/ARCHITECTURE.*\.md|Data/Docs/ARCHITECTURE.*\.md|scripts/generate_repository_memory\.py|\.githooks/pre-commit|docs/AGENT_CONTEXT\.md|docs/ACTIVE_WORK\.md|docs/DECISIONS_LOG\.md|AGENTS\.md)$')
+
+if [ ! -z "$MEMORY_INPUTS" ]; then
+  echo "Refreshing repository memory layer..."
+  python3 scripts/generate_repository_memory.py
+  git update-index --add --remove -- docs/AGENT_CONTEXT\.md docs/ACTIVE_WORK\.md docs/DECISIONS_LOG\.md AGENTS.md
+fi
+# end repository-memory-layer managed block

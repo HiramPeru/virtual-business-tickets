@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
 import re
 import subprocess
 from dataclasses import dataclass
@@ -8,26 +9,13 @@ from pathlib import Path
 
 
 REPO_ROOT = Path.cwd()
-DOCS_DIR = REPO_ROOT / "Data" / "Docs"
-
-AGENT_CONTEXT_PATH = DOCS_DIR / "AGENT_CONTEXT.md"
-ACTIVE_WORK_PATH = DOCS_DIR / "ACTIVE_WORK.md"
-DECISIONS_LOG_PATH = DOCS_DIR / "DECISIONS_LOG.md"
+MANIFEST_PATH = REPO_ROOT / ".repository-memory-layer.json"
 
 PROJECT_INSTRUCTIONS_CANDIDATES = [
     REPO_ROOT / "PROJECT_INSTRUCTIONS.md",
     REPO_ROOT / "AGENT_RULES.md",
 ]
 README_PATH = REPO_ROOT / "README.md"
-CHANGELOG_CANDIDATES = [
-    DOCS_DIR / "CHANGELOG.md",
-    REPO_ROOT / "CHANGELOG.md",
-]
-DECISION_LOG_CANDIDATES = [
-    DOCS_DIR / "decision-log.md",
-    DOCS_DIR / "DECISIONS.md",
-    REPO_ROOT / "docs" / "decision-log.md",
-]
 
 
 @dataclass
@@ -58,6 +46,24 @@ def write_text(path: Path, content: str) -> None:
     path.write_text(content.rstrip() + "\n", encoding="utf-8")
 
 
+def read_manifest() -> dict | None:
+    if not MANIFEST_PATH.exists():
+        return None
+    return json.loads(read_text(MANIFEST_PATH))
+
+
+def detect_docs_dir() -> Path:
+    manifest = read_manifest()
+    if manifest and manifest.get("docs_path"):
+        return REPO_ROOT / manifest["docs_path"]
+
+    for relative in [Path("docs/ai"), Path("docs"), Path("Data/Docs")]:
+        candidate = REPO_ROOT / relative
+        if candidate.exists():
+            return candidate
+    return REPO_ROOT / "docs" / "ai"
+
+
 def first_existing(paths: list[Path]) -> Path | None:
     for path in paths:
         if path.exists():
@@ -65,16 +71,44 @@ def first_existing(paths: list[Path]) -> Path | None:
     return None
 
 
-def architecture_paths() -> list[Path]:
+def candidate_docs_dirs(docs_dir: Path) -> list[Path]:
+    candidates = [docs_dir, REPO_ROOT / "docs" / "ai", REPO_ROOT / "docs", REPO_ROOT / "Data" / "Docs"]
+    unique: list[Path] = []
+    for candidate in candidates:
+        if candidate not in unique:
+            unique.append(candidate)
+    return unique
+
+
+def architecture_paths(docs_dir: Path) -> list[Path]:
     paths: list[Path] = []
-    for candidate in [
-        DOCS_DIR / "architecture.md",
-        *sorted(DOCS_DIR.glob("ARCHITECTURE*.md")),
-        *(sorted((REPO_ROOT / "docs").glob("architecture*.md")) if (REPO_ROOT / "docs").exists() else []),
-    ]:
-        if candidate.exists() and candidate not in paths:
-            paths.append(candidate)
+    for docs_candidate in candidate_docs_dirs(docs_dir):
+        for candidate in [
+            docs_candidate / "architecture.md",
+            *sorted(docs_candidate.glob("ARCHITECTURE*.md")),
+            *sorted(docs_candidate.glob("architecture*.md")),
+        ]:
+            if candidate.exists() and candidate not in paths:
+                paths.append(candidate)
     return paths
+
+
+def changelog_candidates(docs_dir: Path) -> list[Path]:
+    candidates = [docs_candidate / "CHANGELOG.md" for docs_candidate in candidate_docs_dirs(docs_dir)]
+    candidates.append(REPO_ROOT / "CHANGELOG.md")
+    return candidates
+
+
+def decision_log_candidates(docs_dir: Path) -> list[Path]:
+    candidates: list[Path] = []
+    for docs_candidate in candidate_docs_dirs(docs_dir):
+        candidates.extend(
+            [
+                docs_candidate / "decision-log.md",
+                docs_candidate / "DECISIONS.md",
+            ]
+        )
+    return candidates
 
 
 def extract_section_bullets(text: str, heading_fragment: str) -> list[str]:
@@ -339,10 +373,15 @@ def render_decisions_log(decision_path: Path | None, rows: list[DecisionRow]) ->
 
 
 def main() -> None:
+    docs_dir = detect_docs_dir()
+    agent_context_path = docs_dir / "AGENT_CONTEXT.md"
+    active_work_path = docs_dir / "ACTIVE_WORK.md"
+    decisions_log_path = docs_dir / "DECISIONS_LOG.md"
+
     governance_path = first_existing(PROJECT_INSTRUCTIONS_CANDIDATES)
-    changelog_path = first_existing(CHANGELOG_CANDIDATES)
-    decision_path = first_existing(DECISION_LOG_CANDIDATES)
-    arch_paths = architecture_paths()
+    changelog_path = first_existing(changelog_candidates(docs_dir))
+    decision_path = first_existing(decision_log_candidates(docs_dir))
+    arch_paths = architecture_paths(docs_dir)
 
     governance_text = read_text(governance_path) if governance_path else ""
     readme_text = read_text(README_PATH) if README_PATH.exists() else ""
@@ -356,7 +395,7 @@ def main() -> None:
         recent_signals = ["Add changelog entries to improve durable signal quality."]
 
     write_text(
-        AGENT_CONTEXT_PATH,
+        agent_context_path,
         render_agent_context(
             branch=branch,
             summary=product_summary(readme_text, governance_text),
@@ -367,7 +406,7 @@ def main() -> None:
         ),
     )
     write_text(
-        ACTIVE_WORK_PATH,
+        active_work_path,
         render_active_work(
             branch=branch,
             focus=infer_focus(recent_sections),
@@ -376,7 +415,7 @@ def main() -> None:
         ),
     )
     write_text(
-        DECISIONS_LOG_PATH,
+        decisions_log_path,
         render_decisions_log(decision_path, extract_decisions(decision_text)),
     )
 

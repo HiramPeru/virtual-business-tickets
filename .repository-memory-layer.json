@@ -1,6 +1,6 @@
 {
-  "version": "0.1.0",
-  "installed_at": "2026-06-06T13:19:34Z",
+  "version": "0.2.3",
+  "installed_at": "2026-06-06T17:55:58Z",
   "docs_path": "docs",
   "installed_files": [
     "docs/AGENT_CONTEXT.md",
@@ -8,5 +8,9 @@
     "docs/DECISIONS_LOG.md",
     "docs/STARTUP_PROMPT.md",
     "scripts/generate_repository_memory.py"
-  ]
+  ],
+  "hook_path": ".githooks/pre-commit",
+  "agents_path": "AGENTS.md",
+  "previous_hooks_path": "",
+  "previous_hook_existed": true
 }
