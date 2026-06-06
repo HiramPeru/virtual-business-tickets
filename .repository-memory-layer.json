@@ -1,0 +1,12 @@
+{
+  "version": "0.1.0",
+  "installed_at": "2026-06-06T13:19:34Z",
+  "docs_path": "docs",
+  "installed_files": [
+    "docs/AGENT_CONTEXT.md",
+    "docs/ACTIVE_WORK.md",
+    "docs/DECISIONS_LOG.md",
+    "docs/STARTUP_PROMPT.md",
+    "scripts/generate_repository_memory.py"
+  ]
+}
