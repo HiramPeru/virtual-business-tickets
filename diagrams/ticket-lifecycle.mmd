@@ -1,0 +1,10 @@
+flowchart LR
+    A["New Ticket"] --> B["Manual Triage"]
+    B --> C["Prioritization"]
+    C --> D["Assignment or Review"]
+    D --> E["Comment and Event History"]
+    E --> F["Resolution"]
+    F --> G["Closure"]
+    G --> H["Operational Reporting"]
+    E --> I["Pending Customer Loop"]
+    I --> E

@@ -1,0 +1,9 @@
+flowchart LR
+    A["User Roles<br/>Admin | Operator | Client Read Only"] --> B["Next.js App<br/>UI + Protected Routes + API Handlers"]
+    B --> C["Supabase Auth<br/>Identity + Sessions"]
+    B --> D["Supabase PostgreSQL<br/>Tickets + Customers + Profiles"]
+    C --> D
+    D --> E["RLS Policies<br/>Role and Account Scope"]
+    D --> F["Migrations and Triggers<br/>Ticket Codes + Event History"]
+    F --> G["Ticket Workflows<br/>Create | Assign | Comment | Resolve | Close"]
+    D --> H["Reporting and Automation Layer<br/>CSV Export Today | AI Triage Roadmap"]

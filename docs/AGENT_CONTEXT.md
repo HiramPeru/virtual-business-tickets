@@ -5,7 +5,7 @@ Compact operational context for future AI sessions. Refresh from stable reposito
 
 ## Product summary
 
-Internal ticketing platform designed for MSP operations, built with Next.js, TypeScript, Supabase and Vercel.
+Virtual Business Tickets is a public technical portfolio repository for an MSP-oriented ticketing and service operations system built with Next.js, TypeScript, Supabase, and Vercel.
 
 ## Current branch and status
 
@@ -14,7 +14,8 @@ Internal ticketing platform designed for MSP operations, built with Next.js, Typ
 
 ## Architecture summary
 
-- No architecture docs found. Add an architecture doc before relying on generated summaries.
+- Virtual Business Tickets uses a straightforward service-operations architecture: - a Next.js frontend and server layer for user workflows; - Supabase Auth for identity; - PostgreSQL tables, policies, and triggers for operational data; - Vercel-oriented deployment for application delivery.
+- Navigation, orchestration, and trust boundaries should be summarized from the repository's current architecture docs.
 
 ## Core modules
 
@@ -51,3 +52,4 @@ Internal ticketing platform designed for MSP operations, built with Next.js, Typ
 ## Primary source docs
 
 - `README.md`
+- `docs/architecture.md`

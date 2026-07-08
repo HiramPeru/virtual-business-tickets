@@ -1,0 +1,10 @@
+flowchart LR
+    A["Ticket Input"] --> B["Classifier"]
+    B --> C["Priority Scorer"]
+    C --> D["Summary Generator"]
+    D --> E["Recommended Next Action"]
+    E --> F["Service Dashboard"]
+    C --> G["SLA Risk Detection"]
+    A --> H["Duplicate Detection"]
+    G --> F
+    H --> F
