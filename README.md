@@ -97,6 +97,22 @@ This repository is a public technical portfolio, not a production-operations dum
 - Documentation should distinguish implemented capabilities from roadmap ideas.
 - Deployment examples should stay conceptual and use placeholders only.
 
+## My Role / Contribution
+
+I developed and maintain this MSP-oriented application and its public documentation, including ticket lifecycle workflows, customer scoping, role-aware access and CSV export. The [application source](src/app), [database migrations](supabase/migrations), and [architecture](docs/architecture.md) make those contributions reviewable in the repository history.
+
+## Evidence / Outcomes
+
+- [Ticket handlers](src/app/api/tickets) expose lifecycle, comments and export implementation.
+- [Database schema](supabase/schema.sql) and [migrations](supabase/migrations) expose the data model and access-policy evolution.
+- [Security model](docs/SECURITY_MODEL.md) and [QA checklist](docs/QA.md) document the intended controls and review process; a checklist is not proof of a fresh successful test run.
+
+This is implementation evidence, not a claim of measured adoption, production SLA performance, or independently audited security. [AI triage](docs/AI_TRIAGE_ROADMAP.md) remains a roadmap, not an implemented LLM capability.
+
+## Engineering Decisions
+
+Next.js provides the operator interface and server handlers, while PostgreSQL policies enforce access near the data. Ticket events retain lifecycle history, and CSV export supports operational reporting without requiring an AI service.
+
 ## Documentation Index
 
 Public portfolio documentation:
