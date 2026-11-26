@@ -1,5 +1,7 @@
 # Virtual Business Tickets
 
+**Project Status:** Sanitized full-stack reference application (Next.js App Router, TypeScript, Supabase Auth, and PostgreSQL Row Level Security).
+
 Virtual Business Tickets is a public technical portfolio repository for an MSP-oriented ticketing and service operations system built with Next.js, TypeScript, Supabase, and Vercel.
 
 ## Executive Summary
@@ -111,7 +113,15 @@ This is implementation evidence, not a claim of measured adoption, production SL
 
 ## Engineering Decisions
 
-Next.js provides the operator interface and server handlers, while PostgreSQL policies enforce access near the data. Ticket events retain lifecycle history, and CSV export supports operational reporting without requiring an AI service.
+- **Database-enforced multi-tenant scoping:** PostgreSQL Row Level Security (RLS) enforces role (`admin`, `operator`, `client_readonly`, `pending`) and principal-client boundaries directly at the data layer rather than relying solely on frontend route guards.
+- **Immutable operational audit trail:** Database triggers and lifecycle handlers record ticket events alongside internal vs. customer-visible comments to preserve service history for SLA and escalation reviews.
+- **Pragmatic operational reporting:** Built-in CSV export supports immediate service-desk reporting without requiring external BI infrastructure or an active AI service.
+
+## Limitations
+
+- **No public shared database instance:** Running the full interactive workflow requires a developer-supplied Supabase project configured via `.env.local` using the schema and migrations in `supabase/`.
+- **Manual QA checklist vs. automated CI tests:** [docs/QA.md](docs/QA.md) documents the verification procedure for roles and ticket flows; it is not an automated end-to-end test suite run in CI.
+- **Roadmap separation:** AI-assisted ticket triage ([docs/AI_TRIAGE_ROADMAP.md](docs/AI_TRIAGE_ROADMAP.md)) is an architectural design roadmap, not an implemented runtime integration.
 
 ## Documentation Index
 
